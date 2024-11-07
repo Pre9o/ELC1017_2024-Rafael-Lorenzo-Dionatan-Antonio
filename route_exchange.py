@@ -4,6 +4,33 @@ from threading import Thread
 import time
 import sys
 
+class RouteTable:
+    def __init__(self) -> None:
+        self.table = {"mask": [], "network": [], "next_hop": [], "interface": [], "cost": []}
+
+    def add_route(self, mask, network, next_hop, interface, cost):
+        self.table["mask"].append(mask)
+        self.table["network"].append(network)
+        self.table["next_hop"].append(next_hop)
+        self.table["interface"].append(interface)
+        self.table["cost"].append(cost)
+
+    def get_route(self, network):
+        for i in range(len(self.table["network"])):
+            if self.table["network"][i] == network:
+                return self.table["mask"][i], self.table["next_hop"][i], self.table["interface"][i], self.table["cost"][i]
+        return None, None, None, None
+    
+    def update_route(self, mask, network, next_hop, interface, cost):
+        for i in range(len(self.table["network"])):
+            if self.table["network"][i] == network:
+                self.table["mask"][i] = mask
+                self.table["next_hop"][i] = next_hop
+                self.table["interface"][i] = interface
+                self.table["cost"][i] = cost
+                return True
+        return False
+
 # --- Packet Definitions ---
 
 class RouteEntry(Packet):
@@ -21,7 +48,7 @@ class RoutePacket(Packet):
     ]
 
 # Bind layer so Scapy recognizes RoutePacket as a custom protocol
-bind_layers(Ether, RoutePacket, type=0x1234)
+bind_layers(UDP, RoutePacket, dport=12345)
 
 # --- Sending and Receiving Functions ---
 
@@ -29,7 +56,7 @@ bind_layers(Ether, RoutePacket, type=0x1234)
 def send_route_table(interface, routes):
     route_packet = RoutePacket(num_routes=len(routes))
     route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2]) for route in routes]
-    sendp(Ether()/route_packet, iface=interface)
+    send(IP(dst="255.255.255.255")/UDP(dport=12345)/route_packet, iface=interface)
     print(f"Route table sent on interface {interface}")
 
 # Processes received route packets and updates the route table
@@ -38,7 +65,7 @@ def process_route_packet(pkt):
         print("Received route packet!")
         for route in pkt[RoutePacket].routes:
             print(f"Route: {route.network}/{route.mask} via {route.next_hop}")
-            # Update route table with new entries as per custom logic
+        print(f"IP src: {pkt[IP].src}")
 
 # Sets up periodic route table transmission
 def periodic_route_sender(interface, routes, interval=10):
@@ -55,7 +82,7 @@ def main(interface, routes):
     sender_thread.start()
 
     # Start sniffing for route packets on the interface
-    sniff(iface=interface, filter="ether proto 0x1234", prn=process_route_packet)
+    sniff(iface=interface, filter="udp port 12345", prn=process_route_packet)
 
 if __name__ == "__main__":
     # Example usage: python route_exchange.py r1-eth2 "10.1.1.0/24:10.3.3.2,10.2.2.0/24:10.3.3.2"

@@ -3,7 +3,6 @@
 from scapy.all import *
 from scapy.fields import *
 
-# --- Definições do Pacote do Protocolo de Rotas ---
 
 class RouteEntry(Packet):
     fields_desc = [
@@ -15,32 +14,28 @@ class RouteEntry(Packet):
 class RoutePacket(Packet):
     fields_desc = [
         ByteField("protocol_id", 99),  # Identificador para nosso protocolo personalizado
-        ByteField("num_routes", 0),    # Número de entradas de rota
+        ByteField("num_routes", 0),    # Número de entradas de rota (PROVISÓRIO)
         PacketListField("routes", [], RouteEntry)
     ]
 
 ROUTE_PROTO_ID = 143
 
-# Bind do novo protocolo ao Ethernet
 bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)
 
-# --- Função para Processar Pacotes ---
 
 def process_route_packet(pkt):
     if RoutePacket in pkt:
         print("Pacote de rota recebido!")
         for route in pkt[RoutePacket].routes:
             print(f"Rota: {route.network}/{route.mask} via {route.next_hop}")
-            # Aqui você pode adicionar lógica para atualizar a tabela de rotas
 
-# --- Função de Captura ---
 
 def example(pkt):
     if IP in pkt:
-        pkt[IP].show()  # Mostra os detalhes do pacote IP normal
+        pkt[IP].show()  # IP NORMAL
     
-    if RoutePacket in pkt:  # Verifica se o pacote é do novo protocolo
-        process_route_packet(pkt)  # Processa o pacote de rota
+    if RoutePacket in pkt:  # NOSSO PROTOCOLO
+        process_route_packet(pkt)  # Processa a tabela... TO DO
 
 # Inicia a captura na interface especificada
 sniff(iface='r-eth1', filter=f"ip proto {ROUTE_PROTO_ID}", prn=example)

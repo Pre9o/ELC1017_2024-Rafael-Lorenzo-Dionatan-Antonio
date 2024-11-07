@@ -4,6 +4,7 @@ from threading import Thread
 import time
 import sys
 
+# TABELA DE ROTEAMENTO (VAI SER DEFINIDO NO ROUTER)
 class RouteTable:
     def __init__(self) -> None:
         self.table = {"mask": [], "network": [], "next_hop": [], "interface": [], "cost": []}
@@ -31,7 +32,7 @@ class RouteTable:
                 return True
         return False
 
-# --- Packet Definitions ---
+# DEFINIÇÃO DO PACOTE (VAI MUDAR)
 
 class RouteEntry(Packet):
     fields_desc = [
@@ -42,27 +43,25 @@ class RouteEntry(Packet):
 
 class RoutePacket(Packet):
     fields_desc = [
-        ByteField("protocol_id", 99),  # Identificador para nosso protocolo personalizado
-        ByteField("num_routes", 0),    # Número de entradas de rota
+        ByteField("protocol_id", 99),  
+        ByteField("num_routes", 0),    
         PacketListField("routes", [], RouteEntry)
     ]
 
-# Definindo um novo tipo de protocolo IP
-ROUTE_PROTO_ID = 143  # Escolha um número de protocolo IP não utilizado
+ROUTE_PROTO_ID = 777  # ID DO NOSSO PROTOCOLO
 
 # Bind do novo protocolo ao IP
 bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)
 
-# --- Sending and Receiving Functions ---
 
-# Sends the route table in RoutePacket format
+# ENVIA A TABELA DE ROTAS TO DO
 def send_route_table(interface, routes):
     route_packet = RoutePacket(num_routes=len(routes))
     route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2]) for route in routes]
     send(IP(dst="10.1.1.1", proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
     print(f"Route table sent on interface {interface}")
 
-# Processes received route packets and updates the route table
+# ISSO NAO VAI FICAR AQUI, MAS SIM NO ROUTER
 def process_route_packet(pkt):
     if RoutePacket in pkt:
         print("Received route packet!")
@@ -70,21 +69,19 @@ def process_route_packet(pkt):
             print(f"Route: {route.network}/{route.mask} via {route.next_hop}")
         print(f"IP src: {pkt[IP].src}")
 
-# Sets up periodic route table transmission
+# ISSO NAO VAI FICAR AQUI, VAI SER DEFINIDO NO ALGORITMO DE ROTEAMENTO
 def periodic_route_sender(interface, routes, interval=10):
     while True:
         send_route_table(interface, routes)
         time.sleep(interval)
 
-# --- Main Execution ---
 
 def main(interface, routes):
-    # Start thread for sending route tables periodically
     sender_thread = Thread(target=periodic_route_sender, args=(interface, routes))
     sender_thread.daemon = True
     sender_thread.start()
 
-    # Start sniffing for route packets on the interface
+    # NAO SERVE PRA NADA AQUI, VAI SER DEFINIDO NO ROUTER
     sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=process_route_packet)
 
 if __name__ == "__main__":

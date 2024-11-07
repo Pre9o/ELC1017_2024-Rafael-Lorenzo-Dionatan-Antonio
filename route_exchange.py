@@ -42,13 +42,16 @@ class RouteEntry(Packet):
 
 class RoutePacket(Packet):
     fields_desc = [
-        ByteField("protocol_id", 99),  # Protocol identifier for our custom routing protocol
-        ByteField("num_routes", 0),    # Number of route entries
+        ByteField("protocol_id", 99),  # Identificador para nosso protocolo personalizado
+        ByteField("num_routes", 0),    # Número de entradas de rota
         PacketListField("routes", [], RouteEntry)
     ]
 
-# Bind layer so Scapy recognizes RoutePacket as a custom protocol
-bind_layers(UDP, RoutePacket, dport=12345)
+# Definindo um novo tipo de protocolo IP
+ROUTE_PROTO_ID = 143  # Escolha um número de protocolo IP não utilizado
+
+# Bind do novo protocolo ao IP
+bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)
 
 # --- Sending and Receiving Functions ---
 
@@ -56,7 +59,7 @@ bind_layers(UDP, RoutePacket, dport=12345)
 def send_route_table(interface, routes):
     route_packet = RoutePacket(num_routes=len(routes))
     route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2]) for route in routes]
-    send(IP(dst="255.255.255.255")/UDP(dport=12345)/route_packet, iface=interface)
+    send(IP(dst="10.1.1.1", proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
     print(f"Route table sent on interface {interface}")
 
 # Processes received route packets and updates the route table
@@ -82,7 +85,7 @@ def main(interface, routes):
     sender_thread.start()
 
     # Start sniffing for route packets on the interface
-    sniff(iface=interface, filter="udp port 12345", prn=process_route_packet)
+    sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=process_route_packet)
 
 if __name__ == "__main__":
     # Example usage: python route_exchange.py r1-eth2 "10.1.1.0/24:10.3.3.2,10.2.2.0/24:10.3.3.2"

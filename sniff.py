@@ -19,8 +19,10 @@ class RoutePacket(Packet):
         PacketListField("routes", [], RouteEntry)
     ]
 
+ROUTE_PROTO_ID = 143
+
 # Bind do novo protocolo ao Ethernet
-bind_layers(Ether, RoutePacket, type=0x1234)
+bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)
 
 # --- Função para Processar Pacotes ---
 
@@ -41,4 +43,4 @@ def example(pkt):
         process_route_packet(pkt)  # Processa o pacote de rota
 
 # Inicia a captura na interface especificada
-sniff(iface='r-eth1', filter="ether proto 0x1234 or ip", prn=example)
+sniff(iface='r-eth1', filter=f"ip proto {ROUTE_PROTO_ID}", prn=example)

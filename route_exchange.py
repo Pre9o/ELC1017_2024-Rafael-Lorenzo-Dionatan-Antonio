@@ -31,6 +31,28 @@ class RouteTable:
                 self.table["cost"][i] = cost
                 return True
         return False
+    
+class NetworkGraph:
+    def __init__(self) -> None:
+        self.graph = {}
+
+    def add_edge(self, node1, node2, cost):
+        if node1 not in self.graph:
+            self.graph[node1] = {}
+        self.graph[node1][node2] = cost
+
+    def get_cost(self, node1, node2):
+        if node1 in self.graph:
+            if node2 in self.graph[node1]:
+                return self.graph[node1][node2]
+        return None
+
+    def update_edge(self, node1, node2, cost):
+        if node1 in self.graph:
+            if node2 in self.graph[node1]:
+                self.graph[node1][node2] = cost
+                return True
+        return False
 
 # DEFINIÇÃO DO PACOTE (VAI MUDAR)
 
@@ -68,12 +90,37 @@ def process_route_packet(pkt):
         for route in pkt[RoutePacket].routes:
             print(f"Route: {route.network}/{route.mask} via {route.next_hop}")
         print(f"IP src: {pkt[IP].src}")
+    if HelloPacket in pkt:
+        src_ip = pkt[HelloPacket].src
+        neighbors.add(src_ip)
+        print(f"Discovered neighbor: {src_ip}")
+        
 
 # ISSO NAO VAI FICAR AQUI, VAI SER DEFINIDO NO ALGORITMO DE ROTEAMENTO
 def periodic_route_sender(interface, routes, interval=10):
     while True:
         send_route_table(interface, routes)
         time.sleep(interval)
+        
+HELLO_PROTO_ID = 200  # ID do protocolo de roteamento
+
+class HelloPacket(Packet):
+    name = "HelloPacket"
+    fields_desc = [IPField("src", "0.0.0.0")]
+
+bind_layers(IP, HelloPacket, proto=HELLO_PROTO_ID)
+
+neighbors = set()
+
+def send_hello_packet(interface):
+    pkt = IP(dst="255.255.255.255", proto=HELLO_PROTO_ID) / HelloPacket(src=get_if_addr(interface))
+    send(pkt, iface=interface, verbose=False)
+
+def periodic_hello_sender(interface, interval=10):
+    while True:
+        send_hello_packet(interface)
+        time.sleep(interval)
+
 
 
 def main(interface, routes):
@@ -82,7 +129,8 @@ def main(interface, routes):
     sender_thread.start()
 
     # NAO SERVE PRA NADA AQUI, VAI SER DEFINIDO NO ROUTER
-    sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=process_route_packet)
+    sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID} or ip or ip proto {HELLO_PROTO_ID} ", prn=process_route_packet)
+
 
 if __name__ == "__main__":
     # Example usage: python route_exchange.py r1-eth2 "10.1.1.0/24:10.3.3.2,10.2.2.0/24:10.3.3.2"

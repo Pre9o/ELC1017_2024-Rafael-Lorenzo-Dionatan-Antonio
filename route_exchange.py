@@ -124,9 +124,14 @@ def periodic_hello_sender(interface, interval=10):
 
 
 def main(interface, routes):
-    sender_thread = Thread(target=periodic_route_sender, args=(interface, routes))
-    sender_thread.daemon = True
-    sender_thread.start()
+    #sender_thread = Thread(target=periodic_route_sender, args=(interface, routes))
+    #sender_thread.daemon = True
+    #sender_thread.start()
+    
+    
+    hello_sender_thread = Thread(target=periodic_hello_sender, args=(interface,))
+    hello_sender_thread.daemon = True
+    hello_sender_thread.start()
 
     # NAO SERVE PRA NADA AQUI, VAI SER DEFINIDO NO ROUTER
     sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID} or ip or ip proto {HELLO_PROTO_ID} ", prn=process_route_packet)

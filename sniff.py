@@ -18,7 +18,7 @@ class RoutePacket(Packet):
         PacketListField("routes", [], RouteEntry)
     ]
 
-ROUTE_PROTO_ID = 143
+ROUTE_PROTO_ID = 777
 
 bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)
 

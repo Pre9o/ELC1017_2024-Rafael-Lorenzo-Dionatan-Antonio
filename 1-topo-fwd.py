@@ -39,15 +39,6 @@ def run():
     
     net.start()
     
-    # Enable IP forwarding on routers
-    r1, r2 = net.get('r1', 'r2')
-    r1.cmd('sysctl -w net.ipv4.ip_forward=1')
-    r2.cmd('sysctl -w net.ipv4.ip_forward=1')
-    
-    # Add static routes
-    r1.cmd('ip route add 10.2.2.0/24 via 10.3.3.2')
-    r2.cmd('ip route add 10.1.1.0/24 via 10.3.3.1')
-
     CLI(net)
     net.stop()
 

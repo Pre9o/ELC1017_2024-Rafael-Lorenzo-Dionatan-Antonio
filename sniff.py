@@ -38,4 +38,4 @@ def example(pkt):
         process_route_packet(pkt)  # Processa a tabela... TO DO
 
 # Inicia a captura na interface especificada
-sniff(iface='r-eth1', filter=f"ip proto {ROUTE_PROTO_ID}", prn=example)
+sniff(iface='r1-eth2', filter=f"ip proto {ROUTE_PROTO_ID}", prn=example)

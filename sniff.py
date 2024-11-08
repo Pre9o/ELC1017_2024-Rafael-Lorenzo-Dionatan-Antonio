@@ -18,7 +18,7 @@ class RoutePacket(Packet):
         PacketListField("routes", [], RouteEntry)
     ]
 
-ROUTE_PROTO_ID = 777
+ROUTE_PROTO_ID = 143
 
 bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)
 
@@ -38,4 +38,4 @@ def example(pkt):
         process_route_packet(pkt)  # Processa a tabela... TO DO
 
 # Inicia a captura na interface especificada
-sniff(iface='r1-eth2', filter=f"ip proto {ROUTE_PROTO_ID}", prn=example)
+sniff(iface='r1-eth2', filter=f"ip proto {ROUTE_PROTO_ID} or ip", prn=example)

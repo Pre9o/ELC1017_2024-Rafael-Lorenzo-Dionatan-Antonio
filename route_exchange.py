@@ -48,7 +48,7 @@ class RoutePacket(Packet):
         PacketListField("routes", [], RouteEntry)
     ]
 
-ROUTE_PROTO_ID = 777  # ID DO NOSSO PROTOCOLO
+ROUTE_PROTO_ID = 143  # ID DO NOSSO PROTOCOLO
 
 # Bind do novo protocolo ao IP
 bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)

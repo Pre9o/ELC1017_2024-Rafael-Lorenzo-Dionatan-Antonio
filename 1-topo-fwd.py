@@ -59,6 +59,10 @@ def run():
             v.cmd('ethtool -K ' + itf.name + ' tx off rx off')
     
     net.start()
+
+    # Habilitar o encaminhamento de IP em todos os roteadores
+    for router in ['r1', 'r2', 'r3', 'r4', 'r5']:
+        net[router].cmd('sysctl -w net.ipv4.ip_forward=1')
     
     CLI(net)
     net.stop()

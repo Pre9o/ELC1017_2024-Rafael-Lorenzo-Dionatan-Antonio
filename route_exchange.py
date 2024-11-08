@@ -4,34 +4,6 @@ from threading import Thread
 import time
 import sys
 
-# TABELA DE ROTEAMENTO (VAI SER DEFINIDO NO ROUTER)
-class RouteTable:
-    def __init__(self) -> None:
-        self.table = {"mask": [], "network": [], "next_hop": [], "interface": [], "cost": []}
-
-    def add_route(self, mask, network, next_hop, interface, cost):
-        self.table["mask"].append(mask)
-        self.table["network"].append(network)
-        self.table["next_hop"].append(next_hop)
-        self.table["interface"].append(interface)
-        self.table["cost"].append(cost)
-
-    def get_route(self, network):
-        for i in range(len(self.table["network"])):
-            if self.table["network"][i] == network:
-                return self.table["mask"][i], self.table["next_hop"][i], self.table["interface"][i], self.table["cost"][i]
-        return None, None, None, None
-    
-    def update_route(self, mask, network, next_hop, interface, cost):
-        for i in range(len(self.table["network"])):
-            if self.table["network"][i] == network:
-                self.table["mask"][i] = mask
-                self.table["next_hop"][i] = next_hop
-                self.table["interface"][i] = interface
-                self.table["cost"][i] = cost
-                return True
-        return False
-    
 class NetworkGraph:
     def __init__(self) -> None:
         self.graph = {}

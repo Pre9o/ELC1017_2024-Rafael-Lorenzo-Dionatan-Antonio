@@ -113,10 +113,10 @@ def main():
 
 if __name__ == "__main__":
     # Example usage: python route_exchange.py r1-eth2 "10.1.1.0/24:10.3.3.2,10.2.2.0/24:10.3.3.2"
-    if len(sys.argv) < 3:
+    '''if len(sys.argv) < 3:
         print("Usage: python route_exchange.py <interface> <routes>")
         print("Example: python route_exchange.py r1-eth2 '10.1.1.0/24:10.3.3.2,10.2.2.0/24:10.3.3.2'")
-        sys.exit(1)
+        sys.exit(1)'''
     
     # interface = sys.argv[1]
     #raw_routes = sys.argv[2].split(',')

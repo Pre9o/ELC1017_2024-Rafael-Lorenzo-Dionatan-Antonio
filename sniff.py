@@ -50,5 +50,4 @@ def example(pkt):
         process_route_packet(pkt)  # Processa a tabela... TO DO
 
 # Inicia a captura na interface especificada
-sniff(iface='r1-eth2', filter=f"ip proto {ROUTE_PROTO_ID} or ip", prn=example)
 sniff(iface='r5-eth1', filter=f"ip proto {HELLO_PROTO_ID}", prn=process_route_packet)

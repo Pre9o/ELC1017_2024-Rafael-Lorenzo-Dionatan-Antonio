@@ -84,29 +84,31 @@ bind_layers(IP, HelloPacket, proto=HELLO_PROTO_ID)
 
 neighbors = set()
 
-def send_hello_packet(interface):
-    pkt = IP(dst="255.255.255.255", proto=HELLO_PROTO_ID) / HelloPacket(src=get_if_addr(interface))
-    send(pkt, iface=interface, verbose=False)
+def send_hello_packet(interfaces):
+    for interface in interfaces:
+        pkt = IP(dst="255.255.255.255", proto=HELLO_PROTO_ID) / HelloPacket(src=get_if_addr(interface))
+        send(pkt, iface=interface, verbose=False)
 
-def periodic_hello_sender(interface, interval=10):
+def periodic_hello_sender(interfaces, interval=10):
     while True:
-        send_hello_packet(interface)
+        send_hello_packet(interfaces)
         time.sleep(interval)
+        
+def get_interfaces():
+    return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
 
-
-
-def main(interface, routes):
+def main():
     #sender_thread = Thread(target=periodic_route_sender, args=(interface, routes))
     #sender_thread.daemon = True
     #sender_thread.start()
+    interfaces = get_interfaces()
     
-    
-    hello_sender_thread = Thread(target=periodic_hello_sender, args=(interface,))
+    hello_sender_thread = Thread(target=periodic_hello_sender, args=(interfaces,))
     hello_sender_thread.daemon = True
     hello_sender_thread.start()
 
     # NAO SERVE PRA NADA AQUI, VAI SER DEFINIDO NO ROUTER
-    sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID} or ip or ip proto {HELLO_PROTO_ID} ", prn=process_route_packet)
+    #sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID} or ip or ip proto {HELLO_PROTO_ID} ", prn=process_route_packet)
 
 
 if __name__ == "__main__":
@@ -117,13 +119,13 @@ if __name__ == "__main__":
         sys.exit(1)
     
     interface = sys.argv[1]
-    raw_routes = sys.argv[2].split(',')
+    #raw_routes = sys.argv[2].split(',')
     
-    routes = []
+    '''routes = []
     for route in raw_routes:
         network, next_hop = route.split(':')
         network, mask = network.split('/')
         mask = '.'.join([str((0xffffffff << (32 - int(mask)) >> i) & 0xff) for i in [24, 16, 8, 0]])
         routes.append((network, mask, next_hop))
-
-    main(interface, routes)
+'''
+    main()

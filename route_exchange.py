@@ -118,7 +118,7 @@ if __name__ == "__main__":
         print("Example: python route_exchange.py r1-eth2 '10.1.1.0/24:10.3.3.2,10.2.2.0/24:10.3.3.2'")
         sys.exit(1)
     
-    interface = sys.argv[1]
+    # interface = sys.argv[1]
     #raw_routes = sys.argv[2].split(',')
     
     '''routes = []

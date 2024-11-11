@@ -65,6 +65,7 @@ def get_neighbors():
 
 # ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS
 def send_route_table(routes, neighbors):
+    print("Sending route table...")
     route_packet = RoutePacket(num_routes=len(routes))
     route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2]) for route in routes]
     for interface, neighbor in neighbors.items():
@@ -79,6 +80,9 @@ def process_route_packet(pkt):
             print(f"Route: {route.network}/{route.mask} via {route.next_hop}")
         print(f"IP src: {pkt[IP].src}")
 
+def get_interfaces():
+    return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
+
 # ISSO NAO VAI FICAR AQUI, VAI SER DEFINIDO NO ALGORITMO DE ROTEAMENTO
 def periodic_route_sender(routes, interval=10):
     while True:
@@ -92,7 +96,7 @@ def main(routes):
     sender_thread.start()
 
     # Captura pacotes em todas as interfaces
-    # interfaces = get_interfaces()
+    interfaces = get_interfaces()
     for interface in interfaces:
         sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=process_route_packet, store=0)
 

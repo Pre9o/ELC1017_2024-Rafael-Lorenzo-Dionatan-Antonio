@@ -3,32 +3,28 @@ from scapy.fields import *
 from threading import Thread
 import time
 import sys
+import os
+import re
 
-# TABELA DE ROTEAMENTO (VAI SER DEFINIDO NO ROUTER)
-class RouteTable:
+class NetworkGraph:
     def __init__(self) -> None:
-        self.table = {"mask": [], "network": [], "next_hop": [], "interface": [], "cost": []}
+        self.graph = {}
 
-    def add_route(self, mask, network, next_hop, interface, cost):
-        self.table["mask"].append(mask)
-        self.table["network"].append(network)
-        self.table["next_hop"].append(next_hop)
-        self.table["interface"].append(interface)
-        self.table["cost"].append(cost)
+    def add_edge(self, node1, node2, cost):
+        if node1 not in self.graph:
+            self.graph[node1] = {}
+        self.graph[node1][node2] = cost
 
-    def get_route(self, network):
-        for i in range(len(self.table["network"])):
-            if self.table["network"][i] == network:
-                return self.table["mask"][i], self.table["next_hop"][i], self.table["interface"][i], self.table["cost"][i]
-        return None, None, None, None
-    
-    def update_route(self, mask, network, next_hop, interface, cost):
-        for i in range(len(self.table["network"])):
-            if self.table["network"][i] == network:
-                self.table["mask"][i] = mask
-                self.table["next_hop"][i] = next_hop
-                self.table["interface"][i] = interface
-                self.table["cost"][i] = cost
+    def get_cost(self, node1, node2):
+        if node1 in self.graph:
+            if node2 in self.graph[node1]:
+                return self.graph[node1][node2]
+        return None
+
+    def update_edge(self, node1, node2, cost):
+        if node1 in self.graph:
+            if node2 in self.graph[node1]:
+                self.graph[node1][node2] = cost
                 return True
         return False
 
@@ -53,13 +49,27 @@ ROUTE_PROTO_ID = 143  # ID DO NOSSO PROTOCOLO
 # Bind do novo protocolo ao IP
 bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)
 
+# Função para obter os IPs dos vizinhos
+def get_neighbors():
+    neighbors = {}
+    output = os.popen('ip addr').read()
+    interfaces = re.findall(r'\d+: (\w+):', output)
+    for interface in interfaces:
+        if interface != 'lo':
+            ip_output = os.popen(f'ip addr show {str(interface)}').read()
+            match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)/\d+', ip_output)
+            if match:
+                ip = match.group(1)
+                neighbors[interface] = ip
+    return neighbors
 
-# ENVIA A TABELA DE ROTAS TO DO
-def send_route_table(interface, routes):
+# ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS
+def send_route_table(routes, neighbors):
     route_packet = RoutePacket(num_routes=len(routes))
     route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2]) for route in routes]
-    send(IP(dst="10.1.1.254", proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
-    print(f"Route table sent on interface {interface}")
+    for interface, neighbor in neighbors.items():
+        send(IP(dst=neighbor, proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
+        print(f"Route table sent to {neighbor} on interface {interface}")
 
 # ISSO NAO VAI FICAR AQUI, MAS SIM NO ROUTER
 def process_route_packet(pkt):
@@ -70,29 +80,30 @@ def process_route_packet(pkt):
         print(f"IP src: {pkt[IP].src}")
 
 # ISSO NAO VAI FICAR AQUI, VAI SER DEFINIDO NO ALGORITMO DE ROTEAMENTO
-def periodic_route_sender(interface, routes, interval=10):
+def periodic_route_sender(routes, interval=10):
     while True:
-        send_route_table(interface, routes)
+        neighbors = get_neighbors()
+        send_route_table(routes, neighbors)
         time.sleep(interval)
 
-
-def main(interface, routes):
-    sender_thread = Thread(target=periodic_route_sender, args=(interface, routes))
+def main(routes):
+    sender_thread = Thread(target=periodic_route_sender, args=(routes,))
     sender_thread.daemon = True
     sender_thread.start()
 
-    # NAO SERVE PRA NADA AQUI, VAI SER DEFINIDO NO ROUTER
-    sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=process_route_packet)
+    # Captura pacotes em todas as interfaces
+    # interfaces = get_interfaces()
+    for interface in interfaces:
+        sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=process_route_packet, store=0)
 
 if __name__ == "__main__":
-    # Example usage: python route_exchange.py r1-eth2 "10.1.1.0/24:10.3.3.2,10.2.2.0/24:10.3.3.2"
-    if len(sys.argv) < 3:
-        print("Usage: python route_exchange.py <interface> <routes>")
-        print("Example: python route_exchange.py r1-eth2 '10.1.1.0/24:10.3.3.2,10.2.2.0/24:10.3.3.2'")
+    # Example usage: python route_exchange.py "10.1.1.0/24:10.3.3.2,10.2.2.0/24:10.3.3.2"
+    if len(sys.argv) < 2:
+        print("Usage: python route_exchange.py <routes>")
+        print("Example: python route_exchange.py '10.1.1.0/24:10.3.3.2,10.2.2.0/24:10.3.3.2'")
         sys.exit(1)
     
-    interface = sys.argv[1]
-    raw_routes = sys.argv[2].split(',')
+    raw_routes = sys.argv[1].split(',')
     
     routes = []
     for route in raw_routes:
@@ -101,4 +112,4 @@ if __name__ == "__main__":
         mask = '.'.join([str((0xffffffff << (32 - int(mask)) >> i) & 0xff) for i in [24, 16, 8, 0]])
         routes.append((network, mask, next_hop))
 
-    main(interface, routes)
+    main(routes)

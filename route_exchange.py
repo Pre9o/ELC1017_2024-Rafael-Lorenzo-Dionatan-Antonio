@@ -48,7 +48,7 @@ class RoutePacket(Packet):
         PacketListField("routes", [], RouteEntry)
     ]
 
-ROUTE_PROTO_ID = 777  # ID DO NOSSO PROTOCOLO
+ROUTE_PROTO_ID = 143  # ID DO NOSSO PROTOCOLO
 
 # Bind do novo protocolo ao IP
 bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)
@@ -58,7 +58,7 @@ bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)
 def send_route_table(interface, routes):
     route_packet = RoutePacket(num_routes=len(routes))
     route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2]) for route in routes]
-    send(IP(dst="10.1.1.1", proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
+    send(IP(dst="10.1.1.254", proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
     print(f"Route table sent on interface {interface}")
 
 # ISSO NAO VAI FICAR AQUI, MAS SIM NO ROUTER

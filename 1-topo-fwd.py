@@ -64,6 +64,50 @@ def run():
     for router in ['r1', 'r2', 'r3', 'r4', 'r5']:
         net[router].cmd('sysctl -w net.ipv4.ip_forward=1')
     
+    # Adicionar rotas estáticas em cada roteador
+    net['r1'].cmd('ip route add 10.2.2.0/24 via 10.11.11.2')
+    net['r1'].cmd('ip route add 10.3.3.0/24 via 10.12.12.2')
+    net['r1'].cmd('ip route add 10.4.4.0/24 via 10.11.11.2')
+    net['r1'].cmd('ip route add 10.5.5.0/24 via 10.11.11.2')
+    net['r1'].cmd('ip route add 10.6.6.0/24 via 10.11.11.2')
+    net['r1'].cmd('ip route add 10.7.7.0/24 via 10.12.12.2')
+    net['r1'].cmd('ip route add 10.8.8.0/24 via 10.10.10.2')
+
+    net['r2'].cmd('ip route add 10.1.1.0/24 via 10.11.11.1')
+    net['r2'].cmd('ip route add 10.3.3.0/24 via 10.15.15.2')
+    net['r2'].cmd('ip route add 10.4.4.0/24 via 10.13.13.2')
+    net['r2'].cmd('ip route add 10.5.5.0/24 via 10.13.13.2')
+    net['r2'].cmd('ip route add 10.6.6.0/24 via 10.13.13.2')
+    net['r2'].cmd('ip route add 10.7.7.0/24 via 10.15.15.2')
+    net['r2'].cmd('ip route add 10.8.8.0/24 via 10.11.11.1')
+    net['r2'].cmd('ip route add 10.9.9.0/24 via 10.11.11.1')
+
+    net['r3'].cmd('ip route add 10.1.1.0/24 via 10.12.12.1')
+    net['r3'].cmd('ip route add 10.2.2.0/24 via 10.15.15.1')
+    net['r3'].cmd('ip route add 10.4.4.0/24 via 10.14.14.1')
+    net['r3'].cmd('ip route add 10.5.5.0/24 via 10.14.14.1')
+    net['r3'].cmd('ip route add 10.6.6.0/24 via 10.14.14.1')
+    net['r3'].cmd('ip route add 10.7.7.0/24 via 10.14.14.1')
+    net['r3'].cmd('ip route add 10.8.8.0/24 via 10.12.12.1')
+    net['r3'].cmd('ip route add 10.9.9.0/24 via 10.12.12.1')
+
+    net['r4'].cmd('ip route add 10.1.1.0/24 via 10.13.13.1')
+    net['r4'].cmd('ip route add 10.2.2.0/24 via 10.13.13.1')
+    net['r4'].cmd('ip route add 10.3.3.0/24 via 10.14.14.2')
+    net['r4'].cmd('ip route add 10.5.5.0/24 via 10.13.13.1')
+    net['r4'].cmd('ip route add 10.6.6.0/24 via 10.13.13.1')
+    net['r4'].cmd('ip route add 10.7.7.0/24 via 10.14.14.2')
+    net['r4'].cmd('ip route add 10.8.8.0/24 via 10.13.13.1')
+    net['r4'].cmd('ip route add 10.9.9.0/24 via 10.13.13.1')
+
+    net['r5'].cmd('ip route add 10.1.1.0/24 via 10.10.10.1')
+    net['r5'].cmd('ip route add 10.3.3.0/24 via 10.10.10.1')
+    net['r5'].cmd('ip route add 10.4.4.0/24 via 10.10.10.1')
+    net['r5'].cmd('ip route add 10.5.5.0/24 via 10.10.10.1')
+    net['r5'].cmd('ip route add 10.6.6.0/24 via 10.10.10.1')
+    net['r5'].cmd('ip route add 10.7.7.0/24 via 10.10.10.1')
+    net['r5'].cmd('ip route add 10.9.9.0/24 via 10.10.10.1')
+
     
     CLI(net)
     net.stop()

@@ -51,6 +51,13 @@ ROUTE_PROTO_ID = 143  # ID DO NOSSO PROTOCOLO
 # Bind do novo protocolo ao IP
 bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)
 
+def calculate_broadcast(ip, prefix):
+    ip_bin = ''.join([bin(int(x)+256)[3:] for x in ip.split('.')])
+    network = ip_bin[:prefix] + '0' * (32 - prefix)
+    broadcast = network[:prefix] + '1' * (32 - prefix)
+    broadcast_ip = '.'.join([str(int(broadcast[i:i+8], 2)) for i in range(0, 32, 8)])
+    return broadcast_ip
+
 # Função para obter os IPs dos vizinhos
 def get_neighbors():
     neighbors = {}
@@ -66,13 +73,6 @@ def get_neighbors():
             neighbors[interface] = broadcast_ip
             print(f"Interface: {interface}, IP: {ip}, Broadcast: {broadcast_ip}")
     return neighbors
-
-def calculate_broadcast(ip, prefix):
-    ip_bin = ''.join([bin(int(x)+256)[3:] for x in ip.split('.')])
-    network = ip_bin[:prefix] + '0' * (32 - prefix)
-    broadcast = network[:prefix] + '1' * (32 - prefix)
-    broadcast_ip = '.'.join([str(int(broadcast[i:i+8], 2)) for i in range(0, 32, 8)])
-    return broadcast_ip
 
 # ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS
 def send_route_table(routes, neighbors):

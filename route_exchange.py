@@ -5,6 +5,8 @@ import time
 import sys
 import os
 import re
+import subprocess
+
 
 class NetworkGraph:
     def __init__(self) -> None:
@@ -52,15 +54,15 @@ bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)
 # Função para obter os IPs dos vizinhos
 def get_neighbors():
     neighbors = {}
-    output = os.popen('ip addr').read()
-    interfaces = re.findall(r'\d+: (\w+):', output)
+    interfaces = [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
+    print(f"Interfaces encontradas: {interfaces}")
     for interface in interfaces:
-        if interface != 'lo':
-            ip_output = os.popen(f'ip addr show {str(interface)}').read()
-            match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)/\d+', ip_output)
-            if match:
-                ip = match.group(1)
-                neighbors[interface] = ip
+        ip_output = subprocess.check_output(['ip', 'addr', 'show', interface], text=True)
+        match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)/\d+', ip_output)
+        if match:
+            ip = match.group(1)
+            neighbors[interface] = ip
+            print(f"Interface: {interface}, IP: {ip}")
     return neighbors
 
 # ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS

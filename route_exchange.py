@@ -67,6 +67,13 @@ def get_neighbors():
             print(f"Interface: {interface}, IP: {ip}, Broadcast: {broadcast_ip}")
     return neighbors
 
+def calculate_broadcast(ip, prefix):
+    ip_bin = ''.join([bin(int(x)+256)[3:] for x in ip.split('.')])
+    network = ip_bin[:prefix] + '0' * (32 - prefix)
+    broadcast = network[:prefix] + '1' * (32 - prefix)
+    broadcast_ip = '.'.join([str(int(broadcast[i:i+8], 2)) for i in range(0, 32, 8)])
+    return broadcast_ip
+
 # ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS
 def send_route_table(routes, neighbors):
     print("Sending route table...")

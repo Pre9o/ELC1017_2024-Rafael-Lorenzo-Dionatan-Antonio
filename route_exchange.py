@@ -58,11 +58,13 @@ def get_neighbors():
     print(f"Interfaces encontradas: {interfaces}")
     for interface in interfaces:
         ip_output = subprocess.check_output(['ip', 'addr', 'show', interface], text=True)
-        match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)/\d+', ip_output)
+        match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)/(\d+)', ip_output)
         if match:
             ip = match.group(1)
-            neighbors[interface] = ip
-            print(f"Interface: {interface}, IP: {ip}")
+            prefix = int(match.group(2))
+            broadcast_ip = calculate_broadcast(ip, prefix)
+            neighbors[interface] = broadcast_ip
+            print(f"Interface: {interface}, IP: {ip}, Broadcast: {broadcast_ip}")
     return neighbors
 
 # ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS

@@ -63,12 +63,13 @@ def get_router_table():
     routes_output = subprocess.check_output(['ip', 'route'], text=True)
     routes = []
     for line in routes_output.split('\n'):
-        match = re.search(r'(\d+\.\d+\.\d+\.\d+)/(\d+) via (\d+\.\d+\.\d+\.\d+)', line)
+        match = re.search(r'(\d+\.\d+\.\d+\.\d+)/(\d+) via (\d+\.\d+\.\d+\.\d+) dev \S+ metric (\d+)', line)
         if match:
             network = match.group(1)
             mask = int(match.group(2))
             next_hop = match.group(3)
-            cost = match.group(4)
+            cost = int(match.group(4))  # Captura o custo (métrica) da rota
+
             routes.append((network, mask, next_hop, cost))
     return routes
 

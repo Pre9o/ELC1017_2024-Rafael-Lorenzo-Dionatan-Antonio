@@ -8,16 +8,17 @@ class RouteEntry(Packet):
     fields_desc = [
         IPField("network", "0.0.0.0"),
         IPField("mask", "255.255.255.0"),
-        IPField("next_hop", "0.0.0.0")
+        IPField("next_hop", "0.0.0.0"),
+        IPField("cost", 0)
     ]
 
 class RoutePacket(Packet):
     fields_desc = [
-        ByteField("protocol_id", 99),  # Identificador para nosso protocolo personalizado
-        ByteField("num_routes", 0),    # Número de entradas de rota (PROVISÓRIO)
+        ByteField("protocol_id", 143),  
+        ByteField("num_routes", 0),    
         PacketListField("routes", [], RouteEntry)
     ]
-
+    
 ROUTE_PROTO_ID = 143
 
 bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)

@@ -41,6 +41,9 @@ class RouteEntry(Packet):
     ]
 
 class RoutePacket(Packet):
+    def extract_padding(self, s):
+        return '', s
+    
     fields_desc = [
         ByteField("protocol_id", 143),  
         ByteField("num_routes", 0),    

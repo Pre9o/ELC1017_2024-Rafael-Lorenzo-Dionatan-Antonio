@@ -36,12 +36,13 @@ class RouteEntry(Packet):
     fields_desc = [
         IPField("network", "0.0.0.0"),
         IPField("mask", "255.255.255.0"),
-        IPField("next_hop", "0.0.0.0")
+        IPField("next_hop", "0.0.0.0"),
+        IPField("cost", 0)
     ]
 
 class RoutePacket(Packet):
     fields_desc = [
-        ByteField("protocol_id", 99),  
+        ByteField("protocol_id", 143),  
         ByteField("num_routes", 0),    
         PacketListField("routes", [], RouteEntry)
     ]
@@ -58,6 +59,19 @@ def calculate_broadcast(ip, prefix):
     broadcast_ip = '.'.join([str(int(broadcast[i:i+8], 2)) for i in range(0, 32, 8)])
     return broadcast_ip
 
+def get_router_table():
+    routes_output = subprocess.check_output(['ip', 'route'], text=True)
+    routes = []
+    for line in routes_output.split('\n'):
+        match = re.search(r'(\d+\.\d+\.\d+\.\d+)/(\d+) via (\d+\.\d+\.\d+\.\d+)', line)
+        if match:
+            network = match.group(1)
+            mask = int(match.group(2))
+            next_hop = match.group(3)
+            cost = match.group(4)
+            routes.append((network, mask, next_hop, cost))
+    return routes
+
 # Função para obter os IPs dos vizinhos
 def get_neighbors():
     neighbors = {}
@@ -66,6 +80,7 @@ def get_neighbors():
     for interface in interfaces:
         ip_output = subprocess.check_output(['ip', 'addr', 'show', interface], text=True)
         match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)/(\d+)', ip_output)
+        print(match)
         if match:
             ip = match.group(1)
             prefix = int(match.group(2))
@@ -75,10 +90,11 @@ def get_neighbors():
     return neighbors
 
 # ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS
-def send_route_table(routes, neighbors):
+def send_route_table(neighbors):
     print("Sending route table...")
+    routes = get_router_table()
     route_packet = RoutePacket(num_routes=len(routes))
-    route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2]) for route in routes]
+    route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2], cost=route[3]) for route in routes]
     for interface, neighbor in neighbors.items():
         print(f"Sending route table to {neighbor} on interface {interface}")
         send(IP(dst=neighbor, proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
@@ -95,14 +111,14 @@ def get_interfaces():
     return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
 
 # ISSO NAO VAI FICAR AQUI, VAI SER DEFINIDO NO ALGORITMO DE ROTEAMENTO
-def periodic_route_sender(routes, interval=10):
+def periodic_route_sender(interval=10):
     while True:
         neighbors = get_neighbors()
-        send_route_table(routes, neighbors)
+        send_route_table(neighbors)
         time.sleep(interval)
 
-def main(routes):
-    sender_thread = Thread(target=periodic_route_sender, args=(routes,))
+def main():
+    sender_thread = Thread(target=periodic_route_sender, args=())
     sender_thread.daemon = True
     sender_thread.start()
 
@@ -112,19 +128,4 @@ def main(routes):
         sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=process_route_packet, store=0)
 
 if __name__ == "__main__":
-    # Example usage: python route_exchange.py "10.1.1.0/24:10.3.3.2,10.2.2.0/24:10.3.3.2"
-    if len(sys.argv) < 2:
-        print("Usage: python route_exchange.py <routes>")
-        print("Example: python route_exchange.py '10.1.1.0/24:10.3.3.2,10.2.2.0/24:10.3.3.2'")
-        sys.exit(1)
-    
-    raw_routes = sys.argv[1].split(',')
-    
-    routes = []
-    for route in raw_routes:
-        network, next_hop = route.split(':')
-        network, mask = network.split('/')
-        mask = '.'.join([str((0xffffffff << (32 - int(mask)) >> i) & 0xff) for i in [24, 16, 8, 0]])
-        routes.append((network, mask, next_hop))
-
-    main(routes)
+    main()

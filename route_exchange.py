@@ -84,7 +84,6 @@ def send_route_table(routes, neighbors):
         send(IP(dst=neighbor, proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
         print(f"Route table sent to {neighbor} on interface {interface}")
 
-# ISSO NAO VAI FICAR AQUI, MAS SIM NO ROUTER
 def process_route_packet(pkt):
     if RoutePacket in pkt:
         print("Received route packet!")

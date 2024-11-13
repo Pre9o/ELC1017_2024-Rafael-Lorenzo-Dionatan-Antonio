@@ -64,6 +64,7 @@ def run():
     net['r1'].cmd('ip route add 10.10.10.0/24 via 10.10.10.2 metric 2')  # r1 -> r5
     net['r1'].cmd('ip route add 10.11.11.0/24 via 10.11.11.2 metric 4')  # r1 -> r2
     net['r1'].cmd('ip route add 10.12.12.0/24 via 10.12.12.2 metric 3')  # r1 -> r3
+    net['r1'].cmd('ip route add 10.1.1.0/24 via 10.1.1.1 metric 1')      # r1 -> h1
     net['r1'].cmd('ip route add 10.9.9.0/24 via 10.9.9.1 metric 1')      # r1 -> h9
 
     net['r2'].cmd('ip route add 10.11.11.0/24 via 10.11.11.1 metric 9')  # r2 -> r1

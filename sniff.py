@@ -17,7 +17,6 @@ class RoutePacket(Packet):
         ByteField("protocol_id", 143),  
         ByteField("num_routes", 0),    
         PacketListField("routes", [], RouteEntry, count_from=lambda pkt: pkt.num_routes)
-
     ]
     
 ROUTE_PROTO_ID = 143
@@ -29,7 +28,7 @@ def process_route_packet(pkt):
     if RoutePacket in pkt:
         print("Pacote de rota recebido!")
         for route in pkt[RoutePacket].routes:
-            print(f"Rota: {route.network}/{route.mask} via {route.next_hop}")
+            print(f"Rota: {route.network}/{route.mask} via {route.next_hop} com custo {route.cost}")
 
 
 def example(pkt):

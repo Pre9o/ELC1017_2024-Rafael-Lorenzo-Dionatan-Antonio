@@ -16,7 +16,8 @@ class RoutePacket(Packet):
     fields_desc = [
         ByteField("protocol_id", 143),  
         ByteField("num_routes", 0),    
-        PacketListField("routes", [], RouteEntry)
+        PacketListField("routes", [], RouteEntry, count_from=lambda pkt: pkt.num_routes)
+
     ]
     
 ROUTE_PROTO_ID = 143

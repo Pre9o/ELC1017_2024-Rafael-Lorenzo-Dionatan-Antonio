@@ -5,6 +5,9 @@ from scapy.fields import *
 
 
 class RouteEntry(Packet):
+    def extract_padding(self, s):
+        return '', s
+    
     fields_desc = [
         IPField("network", "0.0.0.0"),
         IPField("mask", "255.255.255.0"),

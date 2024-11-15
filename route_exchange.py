@@ -85,7 +85,8 @@ class RouteEntry(Packet):
         IPField("mask", "255.255.255.0"),
         IPField("next_hop", "0.0.0.0"),
         IntField("cost", 0),
-        StrField("router_name", "r1")
+        StrFixedLenField("router_name", "r1", length=2)
+
     ]
 
 class RoutePacket(Packet):

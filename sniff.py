@@ -12,7 +12,8 @@ class RouteEntry(Packet):
         IPField("network", "0.0.0.0"),
         IPField("mask", "255.255.255.0"),
         IPField("next_hop", "0.0.0.0"),
-        IntField("cost", 0)
+        IntField("cost", 0),
+        StrField("router_name", "")
     ]
 
 class RoutePacket(Packet):
@@ -24,7 +25,7 @@ class RoutePacket(Packet):
         ByteField("num_routes", 0),    
         PacketListField("routes", [], RouteEntry, count_from=lambda pkt: pkt.num_routes)
     ]
-    
+
 ROUTE_PROTO_ID = 143
 
 bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)

@@ -151,12 +151,9 @@ def send_route_table(neighbors, NetworkGraphforRouter, router_name):
         send(IP(dst=neighbor, proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
         print(f"Route table sent to {neighbor} on interface {interface}")
 
-def process_route_packet(pkt, my_ip):
+def process_route_packet(pkt):
     if RoutePacket in pkt:
         src_ip = pkt[IP].src
-        if src_ip in my_ip.values():
-            print(f"Ignorando pacote enviado pelo próprio roteador: {src_ip}")
-            return
         print("Received route packet!")
         for route in pkt[RoutePacket].routes:
             print(f"Route: {route.network}/{route.mask} via {route.next_hop}")

@@ -62,7 +62,7 @@ class NetworkGraph:
         routes = set()
         for node_name, node in self.nodes.items():
             for edge in node.edges:
-                route = tuple(sorted((edge.network, edge.mask, edge.next_hop, edge.cost)))
+                route = tuple(sorted([edge.node1, edge.node2]))
 
     def add_edge(self, node1, node2, network, mask, next_hop, cost):
         edge1 = Edge(node1.name, node2.name, network, mask, next_hop, cost)
@@ -139,10 +139,10 @@ def get_neighbors():
     return neighbors
 
 # ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS
-def send_route_table(neighbors, NetworkGraphforRouter):
+def send_route_table(neighbors, NetworkGraphforRouter, router_name):
     routes = NetworkGraphforRouter.get_all_routes()
     route_packet = RoutePacket(num_routes=len(routes))
-    route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2], cost=route[3]) for route in routes]
+    route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2], cost=route[3], router_name=router_name) for route in routes]
     for interface, neighbor in neighbors.items():
         print(f"Sending route table to {neighbor} on interface {interface}")
         send(IP(dst=neighbor, proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
@@ -164,10 +164,10 @@ def get_interfaces():
     return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
 
 # ISSO NAO VAI FICAR AQUI, VAI SER DEFINIDO NO ALGORITMO DE ROTEAMENTO
-def periodic_route_sender(NetworkGraphforRouter, interval=10):
+def periodic_route_sender(NetworkGraphforRouter, router_name, interval=10):
     while True:
         neighbors = get_neighbors()
-        send_route_table(neighbors, NetworkGraphforRouter)
+        send_route_table(neighbors, NetworkGraphforRouter, router_name)
         time.sleep(interval)
 
 def main(router_name):
@@ -177,7 +177,7 @@ def main(router_name):
     # Adiciona as rotas iniciais ao grafo
     NetworkGraphforRouter.add_initial_routes(routes, router_name)
     
-    sender_thread = Thread(target=periodic_route_sender, args=(NetworkGraphforRouter,))
+    sender_thread = Thread(target=periodic_route_sender, args=(NetworkGraphforRouter, router_name))
     sender_thread.daemon = True
     sender_thread.start()
 

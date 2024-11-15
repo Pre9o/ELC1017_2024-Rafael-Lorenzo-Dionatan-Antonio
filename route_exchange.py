@@ -107,11 +107,13 @@ def get_router_table():
     return routes
 
 def get_my_ip():
-    ip_output = subprocess.check_output(['ip', 'addr', 'show', 'eth0'], text=True)
-    match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)/(\d+)', ip_output)
-    if match:
-        return match.group(1)
-    return None
+    interfaces = [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
+    for interface in interfaces:
+        ip_output = subprocess.check_output(['ip', 'addr', 'show', interface], text=True)
+        match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)/(\d+)', ip_output)
+        if match:
+            return match.group(1)
+        
 
 # Função para obter os IPs dos vizinhos
 def get_neighbors():

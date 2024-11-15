@@ -126,7 +126,12 @@ def get_neighbors():
 # ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS
 def send_route_table(neighbors, NetworkGraphforRouter):
     print("Sending route table...")
-    routes = NetworkGraphforRouter.get_all_routes()
+    routes = get_router_table()
+    routes2 = NetworkGraphforRouter.get_all_routes()
+    print("====================================")
+    print(routes)
+    print("====================================")
+    print(routes2)
     route_packet = RoutePacket(num_routes=len(routes))
     route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2], cost=route[3]) for route in routes]
     for interface, neighbor in neighbors.items():

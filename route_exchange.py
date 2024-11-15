@@ -46,7 +46,7 @@ class NetworkGraph:
         routes = []
         for node_name, node in self.nodes.items():
             for edge in node.edges:
-                routes.append((node_name, edge.mask, edge.node2, edge.cost))
+                routes.append((edge.node1, edge.mask, edge.node2, edge.cost))
         return routes
 
     def add_edge(self, node1, mask, node2, cost):

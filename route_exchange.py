@@ -114,24 +114,19 @@ def get_neighbors():
     for interface in interfaces:
         ip_output = subprocess.check_output(['ip', 'addr', 'show', interface], text=True)
         match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)/(\d+)', ip_output)
-        print(match)
         if match:
             ip = match.group(1)
-            prefix = int(match.group(2))
-            broadcast_ip = calculate_broadcast(ip, prefix)
-            neighbors[interface] = broadcast_ip
-            print(f"Interface: {interface}, IP: {ip}, Broadcast: {broadcast_ip}")
+            if ip.endswith('.1') or ip.endswith('.2'):
+                prefix = int(match.group(2))
+                broadcast_ip = calculate_broadcast(ip, prefix)
+                neighbors[interface] = broadcast_ip
+                print(f"Interface: {interface}, IP: {ip}, Broadcast: {broadcast_ip}")
     return neighbors
 
 # ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS
 def send_route_table(neighbors, NetworkGraphforRouter):
     print("Sending route table...")
-    routes = get_router_table()
-    routes2 = NetworkGraphforRouter.get_all_routes()
-    print("====================================")
-    print(routes)
-    print("====================================")
-    print(routes2)
+    routes = NetworkGraphforRouter.get_all_routes()
     route_packet = RoutePacket(num_routes=len(routes))
     route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2], cost=route[3]) for route in routes]
     for interface, neighbor in neighbors.items():
@@ -145,6 +140,8 @@ def process_route_packet(pkt):
         for route in pkt[RoutePacket].routes:
             print(f"Route: {route.network}/{route.mask} via {route.next_hop}")
         print(f"IP src: {pkt[IP].src}")
+        pkt.show()
+        print("=====================================")
 
 def get_interfaces():
     return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']

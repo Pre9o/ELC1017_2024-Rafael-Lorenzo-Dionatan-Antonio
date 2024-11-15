@@ -48,7 +48,7 @@ class NetworkGraph:
             next_hop = route[2]
             cost = route[3]
             node1 = self.get_or_create_node(router_name)
-            node2 = self.get_or_create_node(router_ip_to_name[network])
+            node2 = self.get_or_create_node(router_ip_to_name[next_hop])
 
             self.add_edge(node1, node2, network, mask, next_hop, cost)
 
@@ -64,7 +64,7 @@ class NetworkGraph:
             for edge in node.edges:
                 route = tuple(sorted((edge.network, edge.mask, edge.next_hop, edge.cost)))
 
-    def add_edge(self, node1, node2, node1_ip, node2_ip, network, mask, next_hop, cost):
+    def add_edge(self, node1, node2, network, mask, next_hop, cost):
         edge1 = Edge(node1.name, node2.name, network, mask, next_hop, cost)
         edge2 = Edge(node2.name, node1.name, network, mask, next_hop, cost)
         self.nodes[node1.name].add_edge(edge1)

@@ -141,6 +141,8 @@ def process_route_packet(pkt):
         for route in pkt[RoutePacket].routes:
             print(f"Route: {route.network}/{route.mask} via {route.next_hop}")
         print(f"IP src: {pkt[IP].src}")
+        pkt.show()
+        print("=====================================")
 
 def get_interfaces():
     return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']

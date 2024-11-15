@@ -21,7 +21,7 @@ router_ip_to_name = {
 }
 
 class Edge:
-    def __init__(self, node1, node2, node1_ip, node2_ip, network, mask, next_hop, cost) -> None:
+    def __init__(self, node1, node2, network, mask, next_hop, cost) -> None:
         self.node1 = node1
         self.node2 = node2
         self.network = network

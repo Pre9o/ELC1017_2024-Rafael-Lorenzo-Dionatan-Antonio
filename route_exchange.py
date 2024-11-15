@@ -179,7 +179,7 @@ def main():
     # Captura pacotes em todas as interfaces
     interfaces = get_interfaces()
     for interface in interfaces:
-        sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=process_route_packet(my_ip), store=0)
+        sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=lambda pkt: process_route_packet(pkt, my_ip), store=0)
 
 if __name__ == "__main__":
     main()

@@ -114,10 +114,9 @@ def get_neighbors():
     for interface in interfaces:
         ip_output = subprocess.check_output(['ip', 'addr', 'show', interface], text=True)
         match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)/(\d+)', ip_output)
-        print(match)
         if match:
             ip = match.group(1)
-            if ip.endswith('.1'):
+            if ip.endswith('.1') or ip.endswith('.2'):
                 prefix = int(match.group(2))
                 broadcast_ip = calculate_broadcast(ip, prefix)
                 neighbors[interface] = broadcast_ip

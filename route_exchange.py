@@ -46,7 +46,7 @@ class NetworkGraph:
         routes = set()
         for node_name, node in self.nodes.items():
             for edge in node.edges:
-                route = tuple(sorted((edge.node1_ip, edge.node2_ip, edge.mask, edge.cost)))
+                route = tuple(sorted((edge.node1_ip, edge.node2_ip))) + (edge.mask, edge.cost)
                 routes.add(route)
         return list(routes)
 
@@ -58,8 +58,6 @@ class NetworkGraph:
 
     def get_node(self, node_name):
         return self.nodes.get(node_name)
-
-
 
 class RouteEntry(Packet):
     def extract_padding(self, s):

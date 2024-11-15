@@ -43,11 +43,12 @@ class NetworkGraph:
         return self.nodes[node_name]
     
     def get_all_routes(self):
-        routes = []
+        routes = set()
         for node_name, node in self.nodes.items():
             for edge in node.edges:
-                routes.append((edge.node1_ip, edge.mask, edge.node2_ip, edge.cost))
-        return routes
+                route = tuple(sorted((edge.node1_ip, edge.node2_ip, edge.mask, edge.cost)))
+                routes.add(route)
+        return list(routes)
 
     def add_edge(self, node1, mask, node2, cost):
         edge1 = Edge(node1.name, mask, node2.name, cost)
@@ -57,6 +58,7 @@ class NetworkGraph:
 
     def get_node(self, node_name):
         return self.nodes.get(node_name)
+
 
 
 class RouteEntry(Packet):

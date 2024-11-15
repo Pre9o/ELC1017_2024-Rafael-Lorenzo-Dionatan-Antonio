@@ -63,6 +63,9 @@ class NetworkGraph:
         for node_name, node in self.nodes.items():
             for edge in node.edges:
                 route = tuple(sorted([edge.node1, edge.node2]))
+                routes.add((edge.network, edge.mask, edge.next_hop, edge.cost))
+        return routes
+    
 
     def add_edge(self, node1, node2, network, mask, next_hop, cost):
         edge1 = Edge(node1.name, node2.name, network, mask, next_hop, cost)

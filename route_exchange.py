@@ -106,6 +106,13 @@ def get_router_table():
             routes.append((network, mask, next_hop, cost))
     return routes
 
+def get_my_ip():
+    ip_output = subprocess.check_output(['ip', 'addr', 'show', 'eth0'], text=True)
+    match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)/(\d+)', ip_output)
+    if match:
+        return match.group(1)
+    return None
+
 # Função para obter os IPs dos vizinhos
 def get_neighbors():
     neighbors = {}
@@ -125,7 +132,6 @@ def get_neighbors():
 
 # ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS
 def send_route_table(neighbors, NetworkGraphforRouter):
-    print("Sending route table...")
     routes = NetworkGraphforRouter.get_all_routes()
     route_packet = RoutePacket(num_routes=len(routes))
     route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2], cost=route[3]) for route in routes]
@@ -134,13 +140,16 @@ def send_route_table(neighbors, NetworkGraphforRouter):
         send(IP(dst=neighbor, proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
         print(f"Route table sent to {neighbor} on interface {interface}")
 
-def process_route_packet(pkt):
+def process_route_packet(pkt, my_ip):
     if RoutePacket in pkt:
+        src_ip = pkt[IP].src
+        if src_ip == my_ip:
+            print(f"Ignorando pacote enviado pelo próprio roteador: {src_ip}")
+            return
         print("Received route packet!")
         for route in pkt[RoutePacket].routes:
             print(f"Route: {route.network}/{route.mask} via {route.next_hop}")
-        print(f"IP src: {pkt[IP].src}")
-        pkt.show()
+        print(f"IP src: {src_ip}")
         print("=====================================")
 
 def get_interfaces():
@@ -156,6 +165,7 @@ def periodic_route_sender(NetworkGraphforRouter, interval=10):
 def main():
     NetworkGraphforRouter = NetworkGraph()
     routes = get_router_table()
+    my_ip = get_my_ip()
 
     # Adiciona as rotas iniciais ao grafo
     NetworkGraphforRouter.add_initial_routes(routes)
@@ -167,7 +177,7 @@ def main():
     # Captura pacotes em todas as interfaces
     interfaces = get_interfaces()
     for interface in interfaces:
-        sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=process_route_packet, store=0)
+        sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=process_route_packet(my_ip), store=0)
 
 if __name__ == "__main__":
     main()

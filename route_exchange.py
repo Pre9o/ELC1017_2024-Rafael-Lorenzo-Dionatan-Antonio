@@ -121,17 +121,6 @@ def get_router_table():
             routes.append((network, mask, next_hop, cost))
     return routes
 
-def get_my_ips():
-    interfaces = [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
-    my_ips = {}
-    for interface in interfaces:
-        ip_output = subprocess.check_output(['ip', 'addr', 'show', interface], text=True)
-        match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)/(\d+)', ip_output)
-        if match:
-            my_ips[interface] = match.group(1)
-
-    return my_ips        
-
 # Função para obter os IPs dos vizinhos
 def get_neighbors():
     neighbors = {}
@@ -184,10 +173,9 @@ def periodic_route_sender(NetworkGraphforRouter, interval=10):
 def main(router_name):
     NetworkGraphforRouter = NetworkGraph()
     routes = get_router_table()
-    my_ips = get_my_ips()
 
     # Adiciona as rotas iniciais ao grafo
-    NetworkGraphforRouter.add_initial_routes(routes, router_name=router_name, my_ips=my_ips)
+    NetworkGraphforRouter.add_initial_routes(routes, router_name)
     
     sender_thread = Thread(target=periodic_route_sender, args=(NetworkGraphforRouter,))
     sender_thread.daemon = True
@@ -196,7 +184,7 @@ def main(router_name):
     # Captura pacotes em todas as interfaces
     interfaces = get_interfaces()
     for interface in interfaces:
-        sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=lambda pkt: process_route_packet(pkt, my_ips), store=0)
+        sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=process_route_packet, store=0)
 
 if __name__ == "__main__":
     if len(sys.argv) < 1:

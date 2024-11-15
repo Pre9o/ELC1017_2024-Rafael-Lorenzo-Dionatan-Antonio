@@ -7,11 +7,26 @@ import os
 import re
 import subprocess
 
+router_ip_to_name = {
+    "10.1.1.254": "h1", "10.2.2.254": "h2", "10.3.3.254": "h3",
+    "10.4.4.254": "h4", "10.5.5.254": "h5", "10.6.6.254": "h6",
+    "10.7.7.254": "h7", "10.8.8.254": "h8", "10.9.9.254": "h9",
+    "10.10.10.1": "r5", "10.10.10.2": "r1", "10.11.11.1": "r2",
+    "10.11.11.2": "r1", "10.12.12.1": "r3", "10.12.12.2": "r1",
+    "10.13.13.1": "r2", "10.13.13.2": "r4", "10.15.15.1": "r3",
+    "10.15.15.2": "r2", "10.9.9.1": "r1", "10.1.1.1": "r1",
+    "10.3.3.1": "r3", "10.4.4.1": "r4", "10.5.5.1": "r2",
+    "10.6.6.1": "r4", "10.7.7.1": "r3", "10.2.2.1": "r5",
+    "10.8.8.1": "r5"
+}
+
 class Edge:
-    def __init__(self, node1_ip, mask, node2_ip, cost) -> None:
-        self.node1_ip = node1_ip
+    def __init__(self, node1, node2, node1_ip, node2_ip, network, mask, next_hop, cost) -> None:
+        self.node1 = node1
+        self.node2 = node2
+        self.network = network
         self.mask = mask
-        self.node2_ip = node2_ip
+        self.next_hop = next_hop
         self.cost = cost
 
 class Node:
@@ -26,15 +41,16 @@ class NetworkGraph:
     def __init__(self) -> None:
         self.nodes = {}
 
-    def add_initial_routes(self, routes):
+    def add_initial_routes(self, routes, router_name):
         for route in routes:
-            node1_name = route[0]
+            network = route[0]
             mask = route[1]
-            node2_name = route[2]
+            next_hop = route[2]
             cost = route[3]
-            node1 = self.get_or_create_node(node1_name)
-            node2 = self.get_or_create_node(node2_name)
-            self.add_edge(node1, mask, node2, cost)
+            node1 = self.get_or_create_node(router_name)
+            node2 = self.get_or_create_node(router_ip_to_name[network])
+
+            self.add_edge(node1, node2, network, mask, next_hop, cost)
 
     def get_or_create_node(self, node_name):
         if node_name not in self.nodes:
@@ -46,13 +62,11 @@ class NetworkGraph:
         routes = set()
         for node_name, node in self.nodes.items():
             for edge in node.edges:
-                route = tuple(sorted((edge.node1_ip, edge.node2_ip))) + (edge.mask, edge.cost)
-                routes.add(route)
-        return list(routes)
+                route = tuple(sorted((edge.network, edge.mask, edge.next_hop, edge.cost)))
 
-    def add_edge(self, node1, mask, node2, cost):
-        edge1 = Edge(node1.name, mask, node2.name, cost)
-        edge2 = Edge(node2.name, mask, node1.name, cost)
+    def add_edge(self, node1, node2, node1_ip, node2_ip, network, mask, next_hop, cost):
+        edge1 = Edge(node1.name, node2.name, network, mask, next_hop, cost)
+        edge2 = Edge(node2.name, node1.name, network, mask, next_hop, cost)
         self.nodes[node1.name].add_edge(edge1)
         self.nodes[node2.name].add_edge(edge2)
 
@@ -67,7 +81,8 @@ class RouteEntry(Packet):
         IPField("network", "0.0.0.0"),
         IPField("mask", "255.255.255.0"),
         IPField("next_hop", "0.0.0.0"),
-        IntField("cost", 0)
+        IntField("cost", 0),
+        StrField("router_name", "")
     ]
 
 class RoutePacket(Packet):
@@ -166,13 +181,13 @@ def periodic_route_sender(NetworkGraphforRouter, interval=10):
         send_route_table(neighbors, NetworkGraphforRouter)
         time.sleep(interval)
 
-def main():
+def main(router_name):
     NetworkGraphforRouter = NetworkGraph()
     routes = get_router_table()
     my_ips = get_my_ips()
 
     # Adiciona as rotas iniciais ao grafo
-    NetworkGraphforRouter.add_initial_routes(routes)
+    NetworkGraphforRouter.add_initial_routes(routes, router_name=router_name, my_ips=my_ips)
     
     sender_thread = Thread(target=periodic_route_sender, args=(NetworkGraphforRouter,))
     sender_thread.daemon = True
@@ -184,4 +199,10 @@ def main():
         sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=lambda pkt: process_route_packet(pkt, my_ips), store=0)
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) < 1:
+        print("Usage: python route_exchange.py <router_name>")
+        sys.exit(1)
+
+    router_name = sys.argv[1]
+
+    main(router_name)

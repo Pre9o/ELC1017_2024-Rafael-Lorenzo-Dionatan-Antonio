@@ -7,30 +7,57 @@ import os
 import re
 import subprocess
 
+class Edge:
+    def __init__(self, node1, node2, mask, cost) -> None:
+        self.node1 = node1
+        self.node2 = node2
+        self.mask = mask
+        self.cost = cost
+
+class Node:
+    def __init__(self, name) -> None:
+        self.name = name
+        self.edges = []
+
+    def add_edge(self, edge):
+        self.edges.append(edge)
 
 class NetworkGraph:
     def __init__(self) -> None:
-        self.graph = {}
+        self.nodes = {}
+
+    def add_initial_routes(self, routes):
+        for route in routes:
+            node1_name = route[0]
+            mask = route[1]
+            node2_name = route[2]
+            cost = route[3]
+            node1 = self.get_or_create_node(node1_name)
+            node2 = self.get_or_create_node(node2_name)
+            self.add_edge(node1, node2, mask, cost)
+
+    def get_or_create_node(self, node_name):
+        if node_name not in self.nodes:
+            node = Node(node_name)
+            self.nodes[node_name] = node
+        return self.nodes[node_name]
+    
+    def get_all_routes(self):
+        routes = []
+        for node_name, node in self.nodes.items():
+            for edge in node.edges:
+                routes.append((node_name, edge.mask, edge.node2, edge.cost))
+        return routes
 
     def add_edge(self, node1, node2, cost):
-        if node1 not in self.graph:
-            self.graph[node1] = {}
-        self.graph[node1][node2] = cost
+        edge1 = Edge(node1, node2, cost)
+        edge2 = Edge(node2, node1, cost)
+        self.nodes[node1.name].add_edge(edge1)
+        self.nodes[node2.name].add_edge(edge2)
 
-    def get_cost(self, node1, node2):
-        if node1 in self.graph:
-            if node2 in self.graph[node1]:
-                return self.graph[node1][node2]
-        return None
+    def get_node(self, node_name):
+        return self.nodes.get(node_name)
 
-    def update_edge(self, node1, node2, cost):
-        if node1 in self.graph:
-            if node2 in self.graph[node1]:
-                self.graph[node1][node2] = cost
-                return True
-        return False
-
-# DEFINIÇÃO DO PACOTE (VAI MUDAR)
 
 class RouteEntry(Packet):
     def extract_padding(self, s):
@@ -97,9 +124,9 @@ def get_neighbors():
     return neighbors
 
 # ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS
-def send_route_table(neighbors):
+def send_route_table(neighbors, NetworkGraphforRouter):
     print("Sending route table...")
-    routes = get_router_table()
+    routes = NetworkGraphforRouter.get_all_routes()
     route_packet = RoutePacket(num_routes=len(routes))
     route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2], cost=route[3]) for route in routes]
     for interface, neighbor in neighbors.items():
@@ -118,14 +145,20 @@ def get_interfaces():
     return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
 
 # ISSO NAO VAI FICAR AQUI, VAI SER DEFINIDO NO ALGORITMO DE ROTEAMENTO
-def periodic_route_sender(interval=10):
+def periodic_route_sender(NetworkGraphforRouter, interval=10):
     while True:
         neighbors = get_neighbors()
-        send_route_table(neighbors)
+        send_route_table(neighbors, NetworkGraphforRouter)
         time.sleep(interval)
 
 def main():
-    sender_thread = Thread(target=periodic_route_sender, args=())
+    NetworkGraphforRouter = NetworkGraph()
+    routes = get_router_table()
+
+    # Adiciona as rotas iniciais ao grafo
+    NetworkGraphforRouter.add_initial_routes(routes)
+    
+    sender_thread = Thread(target=periodic_route_sender, args=(NetworkGraphforRouter,))
     sender_thread.daemon = True
     sender_thread.start()
 

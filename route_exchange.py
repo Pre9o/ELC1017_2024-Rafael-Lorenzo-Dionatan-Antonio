@@ -8,10 +8,10 @@ import re
 import subprocess
 
 class Edge:
-    def __init__(self, node1, mask, node2, cost) -> None:
-        self.node1 = node1
+    def __init__(self, node1_ip, mask, node2_ip, cost) -> None:
+        self.node1_ip = node1_ip
         self.mask = mask
-        self.node2 = node2
+        self.node2_ip = node2_ip
         self.cost = cost
 
 class Node:
@@ -46,12 +46,12 @@ class NetworkGraph:
         routes = []
         for node_name, node in self.nodes.items():
             for edge in node.edges:
-                routes.append((edge.node1, edge.mask, edge.node2, edge.cost))
+                routes.append((edge.node1_ip, edge.mask, edge.node2_ip, edge.cost))
         return routes
 
     def add_edge(self, node1, mask, node2, cost):
-        edge1 = Edge(node1, mask, node2, cost)
-        edge2 = Edge(node2, mask, node1, cost)
+        edge1 = Edge(node1.name, mask, node2.name, cost)
+        edge2 = Edge(node2.name, mask, node1.name, cost)
         self.nodes[node1.name].add_edge(edge1)
         self.nodes[node2.name].add_edge(edge2)
 

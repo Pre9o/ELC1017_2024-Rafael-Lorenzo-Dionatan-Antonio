@@ -14,10 +14,10 @@ router_ip_to_name = {
     "10.10.10.1": "r5", "10.10.10.2": "r1", "10.11.11.1": "r2",
     "10.11.11.2": "r1", "10.12.12.1": "r3", "10.12.12.2": "r1",
     "10.13.13.1": "r2", "10.13.13.2": "r4", "10.15.15.1": "r3",
-    "10.15.15.2": "r2", "10.9.9.1": "r1", "10.1.1.1": "r1",
-    "10.3.3.1": "r3", "10.4.4.1": "r4", "10.5.5.1": "r2",
-    "10.6.6.1": "r4", "10.7.7.1": "r3", "10.2.2.1": "r5",
-    "10.8.8.1": "r5"
+    "10.15.15.2": "r2", "10.9.9.1": "h9", "10.1.1.1": "h1",
+    "10.3.3.1": "h3", "10.4.4.1": "h4", "10.5.5.1": "h5",
+    "10.6.6.1": "h6", "10.7.7.1": "h7", "10.2.2.1": "h2",
+    "10.8.8.1": "h8"
 }
 
 class Edge:
@@ -43,6 +43,7 @@ class NetworkGraph:
 
     def add_initial_routes(self, routes, router_name):
         for route in routes:
+            print(route)
             network = route[0]
             mask = route[1]
             next_hop = route[2]
@@ -66,9 +67,7 @@ class NetworkGraph:
                 routes.add((edge.network, edge.mask, edge.next_hop, edge.cost, node_name))
         return routes
     
-
     def add_edge(self, node1, node2, network, mask, next_hop, cost):
-        # Conferir se a aresta ja existe
         for edge in node1.edges:
             if (edge.node1 == node1.name or edge.node1 == node2.name) and (edge.node2 == node2.name or edge.node2 == node1.name):
                 return       

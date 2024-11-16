@@ -7,6 +7,8 @@ import os
 import re
 import subprocess
 
+time_for_send_packets = 5
+
 router_ip_to_name = {
     "10.1.1.254": "r1", "10.2.2.254": "r5", "10.3.3.254": "r1",
     "10.4.4.254": "r3", "10.5.5.254": "r2", "10.6.6.254": "r4",
@@ -185,7 +187,8 @@ def get_interfaces():
     return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
 
 def periodic_route_sender(NetworkGraphforRouter, router_name, interval=10):
-    while NetworkGraphforRouter.get_number_of_nodes() < 14:
+    initial_time = time.time()
+    while NetworkGraphforRouter.get_number_of_nodes() < 14 and time.time() - initial_time < time_for_send_packets:
         neighbors = get_neighbors()
         send_route_table(neighbors, NetworkGraphforRouter, router_name)
         time.sleep(interval)

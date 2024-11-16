@@ -62,21 +62,23 @@ class NetworkGraph:
     def get_all_routes(self):
         routes = set()
         for node_name, node in self.nodes.items():
-            for edge in node.edges:
-                route = tuple(sorted([edge.node1, edge.node2]))
-                routes.add((edge.network, edge.mask, edge.next_hop, edge.cost, node_name))
+            if node_name in ['r1', 'r2', 'r3', 'r4', 'r5']:
+                for edge in node.edges:
+                    route = tuple(sorted([edge.node1, edge.node2]))
+                    routes.add((edge.network, edge.mask, edge.next_hop, edge.cost, edge.node1))
         return routes
     
     def add_edge(self, node1, node2, network, mask, next_hop, cost):
+        if node1.name not in ['r1', 'r2', 'r3', 'r4', 'r5']:
+            return
+
         print(f"Adicionando aresta entre {node1.name} e {node2.name}")
         for edge in node1.edges:
-            if (edge.node1 == node1.name or edge.node1 == node2.name) and (edge.node2 == node2.name or edge.node2 == node1.name):
+            if (edge.node1 == node1.name and edge.node2 == node2.name) or (edge.node1 == node2.name and edge.node2 == node1.name):
                 return       
         
         edge1 = Edge(node1.name, node2.name, network, mask, next_hop, cost)
-        edge2 = Edge(node2.name, node1.name, network, mask, next_hop, cost)
         self.nodes[node1.name].add_edge(edge1)
-        self.nodes[node2.name].add_edge(edge2)
 
     def get_node(self, node_name):
         return self.nodes.get(node_name)

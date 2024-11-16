@@ -163,12 +163,12 @@ def process_route_packet(pkt, NetworkGraphforRouter):
     if RoutePacket in pkt:
         print("Pacote de rota recebido!")
         for route in pkt[RoutePacket].routes:
-            print(f"Rota: {route.network}/{route.mask} via {route.next_hop} com custo {route.cost}")
+            print(f"Rota: {route.network}{route.mask.decode('utf-8')} via {route.next_hop} com custo {route.cost}")
             
         for route in pkt[RoutePacket].routes:
-            node1 = NetworkGraphforRouter.get_or_create_node(str(route.router_name))
+            node1 = NetworkGraphforRouter.get_or_create_node(route.router_name.decode('utf-8'))
             node2 = NetworkGraphforRouter.get_or_create_node(router_ip_to_name[route.next_hop])
-            NetworkGraphforRouter.add_edge(node1, node2, route.network, route.mask, route.next_hop, route.cost)
+            NetworkGraphforRouter.add_edge(node1, node2, route.network, route.mask.decode('utf-8'), route.next_hop, route.cost)
             
         print("Tabela de rota atualizada!")
         for node_name, node in NetworkGraphforRouter.nodes.items():

@@ -10,7 +10,7 @@ class RouteEntry(Packet):
     
     fields_desc = [
         IPField("network", "0.0.0.0"),
-        IPField("mask", "255.255.255.0"),
+        StrFixedLenField("mask", "/24", length=3),
         IPField("next_hop", "0.0.0.0"),
         IntField("cost", 0),
         StrFixedLenField("router_name", "r1", length=2)

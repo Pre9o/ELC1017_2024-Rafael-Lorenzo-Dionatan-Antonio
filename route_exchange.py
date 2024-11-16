@@ -87,7 +87,7 @@ class RouteEntry(Packet):
     
     fields_desc = [
         IPField("network", "0.0.0.0"),
-        IPField("mask", "255.255.255.0"),
+        StrFixedLenField("mask", "/24", length=3),
         IPField("next_hop", "0.0.0.0"),
         IntField("cost", 0),
         StrFixedLenField("router_name", "r1", length=2)
@@ -123,9 +123,9 @@ def get_router_table():
         match = re.search(r'(\d+\.\d+\.\d+\.\d+)/(\d+) via (\d+\.\d+\.\d+\.\d+) dev \S+ metric (\d+)', line)
         if match:
             network = match.group(1)
-            mask = int(match.group(2))
+            mask = f"/{match.group(2)}"  # Converte a máscara para o formato /xx
             next_hop = match.group(3)
-            cost = int(match.group(4))  # Captura o custo (métrica) da rota
+            cost = int(match.group(4))
 
             routes.append((network, mask, next_hop, cost))
     return routes
@@ -147,7 +147,6 @@ def get_neighbors():
                 print(f"Interface: {interface}, IP: {ip}, Broadcast: {broadcast_ip}")
     return neighbors
 
-# ENVIA A TABELA DE ROTAS PARA TODOS OS VIZINHOS
 def send_route_table(neighbors, NetworkGraphforRouter, router_name):
     routes = NetworkGraphforRouter.get_all_routes()
     route_packet = RoutePacket(num_routes=len(routes))
@@ -167,7 +166,7 @@ def process_route_packet(pkt, NetworkGraphforRouter):
             print(f"Rota: {route.network}/{route.mask} via {route.next_hop} com custo {route.cost}")
             
         for route in pkt[RoutePacket].routes:
-            node1 = NetworkGraphforRouter.get_or_create_node(route.router_name)
+            node1 = NetworkGraphforRouter.get_or_create_node(str(route.router_name))
             node2 = NetworkGraphforRouter.get_or_create_node(router_ip_to_name[route.next_hop])
             NetworkGraphforRouter.add_edge(node1, node2, route.network, route.mask, route.next_hop, route.cost)
             

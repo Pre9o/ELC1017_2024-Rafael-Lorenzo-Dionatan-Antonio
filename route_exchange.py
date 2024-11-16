@@ -68,6 +68,11 @@ class NetworkGraph:
     
 
     def add_edge(self, node1, node2, network, mask, next_hop, cost):
+        # Conferir se a aresta ja existe
+        for edge in node1.edges:
+            if edge.node1 == node1.name and edge.node2 == node2.name:
+                return       
+        
         edge1 = Edge(node1.name, node2.name, network, mask, next_hop, cost)
         edge2 = Edge(node2.name, node1.name, network, mask, next_hop, cost)
         self.nodes[node1.name].add_edge(edge1)

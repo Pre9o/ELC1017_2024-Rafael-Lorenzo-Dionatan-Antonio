@@ -153,13 +153,13 @@ def send_route_table(neighbors, NetworkGraphforRouter, router_name):
         print(f"Route table sent to {neighbor} on interface {interface}")
 
 def process_route_packet(pkt):
+    if IP in pkt:
+        pkt[IP].show()  # IP NORMAL
+        
     if RoutePacket in pkt:
-        src_ip = pkt[IP].src
-        print("Received route packet!")
+        print("Pacote de rota recebido!")
         for route in pkt[RoutePacket].routes:
-            print(f"Route: {route.network}/{route.mask} via {route.next_hop}")
-        print(f"IP src: {src_ip}")
-        print("=====================================")
+            print(f"Rota: {route.network}/{route.mask} via {route.next_hop} com custo {route.cost}")
 
 def get_interfaces():
     return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']

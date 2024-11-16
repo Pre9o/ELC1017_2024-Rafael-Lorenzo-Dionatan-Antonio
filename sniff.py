@@ -26,6 +26,9 @@ class RoutePacket(Packet):
         ByteField("num_routes", 0),    
         PacketListField("routes", [], RouteEntry, count_from=lambda pkt: pkt.num_routes)
     ]
+    
+def get_interfaces():
+    return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
 
 ROUTE_PROTO_ID = 143
 
@@ -47,4 +50,8 @@ def example(pkt):
         process_route_packet(pkt)  # Processa a tabela... TO DO
 
 # Inicia a captura na interface especificada
-sniff(iface='r5-eth1', filter=f"ip proto {ROUTE_PROTO_ID} or ip", prn=example)
+# sniff(iface='r5-eth1', filter=f"ip proto {ROUTE_PROTO_ID} or ip", prn=example)
+
+interfaces = get_interfaces()
+for interface in interfaces:
+    sniff(iface=interface, filter=f"ip proto {ROUTE_PROTO_ID}", prn=example)

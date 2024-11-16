@@ -52,6 +52,9 @@ class NetworkGraph:
             node2 = self.get_or_create_node(router_ip_to_name[next_hop])
 
             self.add_edge(node1, node2, network, mask, next_hop, cost)
+            
+    def get_number_of_nodes(self):
+        return len(self.nodes)
 
     def get_or_create_node(self, node_name):
         if node_name not in self.nodes:
@@ -181,9 +184,8 @@ def process_route_packet(pkt, NetworkGraphforRouter):
 def get_interfaces():
     return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
 
-# ISSO NAO VAI FICAR AQUI, VAI SER DEFINIDO NO ALGORITMO DE ROTEAMENTO
 def periodic_route_sender(NetworkGraphforRouter, router_name, interval=10):
-    while True:
+    while NetworkGraphforRouter.get_number_of_nodes() < 14:
         neighbors = get_neighbors()
         send_route_table(neighbors, NetworkGraphforRouter, router_name)
         time.sleep(interval)

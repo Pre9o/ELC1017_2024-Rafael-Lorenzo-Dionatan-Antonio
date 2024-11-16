@@ -63,14 +63,14 @@ class NetworkGraph:
         for node_name, node in self.nodes.items():
             for edge in node.edges:
                 route = tuple(sorted([edge.node1, edge.node2]))
-                routes.add((edge.network, edge.mask, edge.next_hop, edge.cost))
+                routes.add((edge.network, edge.mask, edge.next_hop, edge.cost, node_name))
         return routes
     
 
     def add_edge(self, node1, node2, network, mask, next_hop, cost):
         # Conferir se a aresta ja existe
         for edge in node1.edges:
-            if edge.node1 == node1.name and edge.node2 == node2.name:
+            if (edge.node1 == node1.name or edge.node1 == node2.name) and (edge.node2 == node2.name or edge.node2 == node1.name):
                 return       
         
         edge1 = Edge(node1.name, node2.name, network, mask, next_hop, cost)
@@ -150,9 +150,9 @@ def get_neighbors():
 def send_route_table(neighbors, NetworkGraphforRouter, router_name):
     routes = NetworkGraphforRouter.get_all_routes()
     route_packet = RoutePacket(num_routes=len(routes))
-    route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2], cost=route[3], router_name=router_name) for route in routes]
+    route_packet.routes = [RouteEntry(network=route[0], mask=route[1], next_hop=route[2], cost=route[3], router_name=route[4]) for route in routes]
     for interface, neighbor in neighbors.items():
-        print(f"Sending route table to {neighbor} on interface {interface}")
+        print(routes)
         send(IP(dst=neighbor, proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
         print(f"Route table sent to {neighbor} on interface {interface}")
 
@@ -174,7 +174,7 @@ def process_route_packet(pkt, NetworkGraphforRouter):
         for node_name, node in NetworkGraphforRouter.nodes.items():
             print(f"Node: {node_name}")
             for edge in node.edges:
-                print(f"  {edge.network}/{edge.mask} via {edge.next_hop} com custo {edge.cost}")
+                print(f"  {edge.network}{edge.mask} via {edge.next_hop} com custo {edge.cost}")
 
 def get_interfaces():
     return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']

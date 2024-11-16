@@ -152,7 +152,7 @@ def send_route_table(neighbors, NetworkGraphforRouter, router_name):
         send(IP(dst=neighbor, proto=ROUTE_PROTO_ID)/route_packet, iface=interface)
         print(f"Route table sent to {neighbor} on interface {interface}")
 
-def process_route_packet(pkt):
+def process_route_packet(pkt, NetworkGraphforRouter):
     if IP in pkt:
         pkt[IP].show()  # IP NORMAL
         
@@ -160,6 +160,17 @@ def process_route_packet(pkt):
         print("Pacote de rota recebido!")
         for route in pkt[RoutePacket].routes:
             print(f"Rota: {route.network}/{route.mask} via {route.next_hop} com custo {route.cost}")
+            
+        for route in pkt[RoutePacket].routes:
+            node1 = NetworkGraphforRouter.get_or_create_node(route.router_name)
+            node2 = NetworkGraphforRouter.get_or_create_node(router_ip_to_name[route.next_hop])
+            NetworkGraphforRouter.add_edge(node1, node2, route.network, route.mask, route.next_hop, route.cost)
+            
+        print("Tabela de rota atualizada!")
+        for node_name, node in NetworkGraphforRouter.nodes.items():
+            print(f"Node: {node_name}")
+            for edge in node.edges:
+                print(f"  {edge.network}/{edge.mask} via {edge.next_hop} com custo {edge.cost}")
 
 def get_interfaces():
     return [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
@@ -175,7 +186,7 @@ def main(router_name):
     NetworkGraphforRouter = NetworkGraph()
     routes = get_router_table()
 
-    # Adiciona as rotas iniciais ao grafo
+    # Adiciona as rotas iniciais ao grafo   
     NetworkGraphforRouter.add_initial_routes(routes, router_name)
     
     sender_thread = Thread(target=periodic_route_sender, args=(NetworkGraphforRouter, router_name))
@@ -184,7 +195,7 @@ def main(router_name):
 
     # Captura pacotes em todas as interfaces
     interfaces = get_interfaces()
-    sniff(iface=interfaces, filter=f"ip proto {ROUTE_PROTO_ID}", prn=process_route_packet, store=0)
+    sniff(iface=interfaces, filter=f"ip proto {ROUTE_PROTO_ID}", prn=lambda pkt: process_route_packet(pkt, NetworkGraphforRouter), store=0)
 
 if __name__ == "__main__":
     if len(sys.argv) < 1:

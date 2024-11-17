@@ -23,6 +23,49 @@ router_ip_to_name = {
     "10.8.8.1": "h8"
 }
 
+def dijkstra(graph, start):
+    visited = {start: 0}
+    path = {}
+
+    nodes = set(graph.nodes.keys())
+
+    while nodes:
+        min_node = None
+        for node in nodes:
+            if node in visited:
+                if min_node is None:
+                    min_node = node
+                elif visited[node] < visited[min_node]:
+                    min_node = node
+
+        if min_node is None:
+            break
+
+        nodes.remove(min_node)
+        current_weight = visited[min_node]
+
+        for edge in graph.nodes[min_node].edges:
+            weight = current_weight + edge.cost
+            if edge.node2 not in visited or weight < visited[edge.node2]:
+                visited[edge.node2] = weight
+                path[edge.node2] = min_node
+
+    return visited, path
+
+def new_router_table(graph, router_name):
+    visited, path = dijkstra(graph, router_name)
+    router_table = []
+    for node, cost in visited.items():
+        if node in ['r1', 'r2', 'r3', 'r4', 'r5']:
+            continue
+        next_hop = node
+        while next_hop not in ['r1', 'r2', 'r3', 'r4', 'r5']:
+            next_hop = path[next_hop]
+        network = f"{node}/24"  # Supondo que todas as redes têm máscara /24
+        router_table.append((network, next_hop, cost))
+        # Executa o comando para adicionar a rota
+        subprocess.run(['ip', 'route', 'replace', network, 'via', next_hop, 'metric', str(cost)], text=True)
+
 class Edge:
     def __init__(self, node1, node2, network, mask, next_hop, cost) -> None:
         self.node1 = node1
@@ -112,9 +155,8 @@ class RoutePacket(Packet):
         PacketListField("routes", [], RouteEntry, count_from=lambda pkt: pkt.num_routes)
     ]
 
-ROUTE_PROTO_ID = 143  # ID DO NOSSO PROTOCOLO
+ROUTE_PROTO_ID = 143 
 
-# Bind do novo protocolo ao IP
 bind_layers(IP, RoutePacket, proto=ROUTE_PROTO_ID)
 
 def calculate_broadcast(ip, prefix):
@@ -131,14 +173,13 @@ def get_router_table():
         match = re.search(r'(\d+\.\d+\.\d+\.\d+)/(\d+) via (\d+\.\d+\.\d+\.\d+) dev \S+ metric (\d+)', line)
         if match:
             network = match.group(1)
-            mask = f"/{match.group(2)}"  # Converte a máscara para o formato /xx
+            mask = f"/{match.group(2)}" 
             next_hop = match.group(3)
             cost = int(match.group(4))
 
             routes.append((network, mask, next_hop, cost))
     return routes
 
-# Função para obter os IPs dos vizinhos
 def get_neighbors():
     neighbors = {}
     interfaces = [iface for iface in os.listdir('/sys/class/net/') if iface != 'lo']
@@ -195,6 +236,7 @@ def periodic_route_sender(NetworkGraphforRouter, router_name, interval=1):
             send_route_table(neighbors, NetworkGraphforRouter, router_name)
             time.sleep(interval)
         
+        ew_router_table(NetworkGraphforRouter, router_name)
         
         time.sleep(alorithm_time)
 
@@ -202,14 +244,12 @@ def main(router_name):
     NetworkGraphforRouter = NetworkGraph()
     routes = get_router_table()
 
-    # Adiciona as rotas iniciais ao grafo   
     NetworkGraphforRouter.add_initial_routes(routes, router_name)
     
     sender_thread = Thread(target=periodic_route_sender, args=(NetworkGraphforRouter, router_name))
     sender_thread.daemon = True
     sender_thread.start()
 
-    # Captura pacotes em todas as interfaces
     interfaces = get_interfaces()
     sniff(iface=interfaces, filter=f"ip proto {ROUTE_PROTO_ID}", prn=lambda pkt: process_route_packet(pkt, NetworkGraphforRouter), store=0)
 

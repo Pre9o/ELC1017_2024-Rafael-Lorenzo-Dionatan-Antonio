@@ -24,7 +24,7 @@ router_ip_to_name = {
 }
 
 def dijkstra(graph, start):
-    visited = {start: 0}
+    visited = {start: (0, None)}  # Armazena o custo e a aresta
     path = {}
 
     nodes = set(graph.nodes.keys())
@@ -35,19 +35,19 @@ def dijkstra(graph, start):
             if node in visited:
                 if min_node is None:
                     min_node = node
-                elif visited[node] < visited[min_node]:
+                elif visited[node][0] < visited[min_node][0]:  # Compara os custos
                     min_node = node
 
         if min_node is None:
             break
 
         nodes.remove(min_node)
-        current_weight = visited[min_node]
+        current_weight = visited[min_node][0]
 
         for edge in graph.nodes[min_node].edges:
             weight = current_weight + edge.cost
-            if edge.node2 not in visited or weight < visited[edge.node2]:
-                visited[edge.node2] = weight
+            if edge.node2 not in visited or weight < visited[edge.node2][0]:
+                visited[edge.node2] = (weight, edge)  # Armazena o custo e a aresta
                 path[edge.node2] = min_node
 
     return visited, path
@@ -55,15 +55,14 @@ def dijkstra(graph, start):
 def new_router_table(graph, router_name):
     visited, path = dijkstra(graph, router_name)
     router_table = []
-    for node, cost in visited.items():
+    for node, (cost, edge) in visited.items():
         if node in ['r1', 'r2', 'r3', 'r4', 'r5']:
             continue
         next_hop = node
         while next_hop not in ['r1', 'r2', 'r3', 'r4', 'r5']:
             next_hop = path[next_hop]
         
-        # Acessa as informações da rede a partir dos edges
-        edge = next(edge for edge in graph.nodes[node].edges if edge.node2 == next_hop)
+        # Utiliza as informações da aresta armazenada em visited
         network = f"{edge.network}{edge.mask}"
         router_table.append((network, next_hop, cost))
         

@@ -72,14 +72,19 @@ def new_router_table(graph, router_name):
         
         # Utiliza as informações da aresta armazenada em visited
         network = f"{edge.network}{edge.mask}"
-        next_hop = find_router_for_next_hop(graph, edge.next_hop)
-    
-        # Agora tem que procurar a aresta que o node1 seja o router_name e o node2 seja o next_hop
-        for node_name, node in graph.nodes.items():
-            for edge in node.edges:
-                if edge.node1 == router_name and edge.node2 == next_hop:
-                    next_hop = edge.next_hop
-                    break
+        
+        if next_hop == router_name:
+            next_hop = edge.next_hop
+            cost = edge.cost
+        else:
+            next_hop = find_router_for_next_hop(graph, edge.next_hop)
+        
+            # Agora tem que procurar a aresta que o node1 seja o router_name e o node2 seja o next_hop
+            for node_name, node in graph.nodes.items():
+                for edge in node.edges:
+                    if edge.node1 == router_name and edge.node2 == next_hop:
+                        next_hop = edge.next_hop
+                        break
     
         router_table.append((network, next_hop, cost))
         

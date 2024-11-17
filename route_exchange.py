@@ -52,6 +52,15 @@ def dijkstra(graph, start):
 
     return visited, path
 
+def find_router_for_next_hop(graph, next_hop):
+    for node_name, node in graph.nodes.items():
+        for edge in node.edges:
+            if edge.next_hop == next_hop:
+                return edge.node1
+    return None
+
+
+
 def new_router_table(graph, router_name):
     visited, path = dijkstra(graph, router_name)
     router_table = []
@@ -64,7 +73,7 @@ def new_router_table(graph, router_name):
         
         # Utiliza as informações da aresta armazenada em visited
         network = f"{edge.network}{edge.mask}"
-        next_hop = edge.next_hop
+        next_hop = find_router_for_next_hop(graph, edge.next_hop)
         router_table.append((network, next_hop, cost))
         
         # Executa o comando para adicionar ou substituir a rota

@@ -64,9 +64,11 @@ def new_router_table(graph, router_name):
         
         # Utiliza as informações da aresta armazenada em visited
         network = f"{edge.network}{edge.mask}"
+        next_hop = edge.next_hop
         router_table.append((network, next_hop, cost))
         
         # Executa o comando para adicionar ou substituir a rota
+        print(f"Adicionando rota para {network} via {next_hop} com custo {cost}")
         subprocess.run(['ip', 'route', 'replace', network, 'via', next_hop, 'metric', str(cost)], text=True)
     return router_table
 

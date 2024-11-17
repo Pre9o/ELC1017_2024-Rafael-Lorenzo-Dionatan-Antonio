@@ -61,10 +61,15 @@ def new_router_table(graph, router_name):
         next_hop = node
         while next_hop not in ['r1', 'r2', 'r3', 'r4', 'r5']:
             next_hop = path[next_hop]
-        network = f"{node}/24"  # Supondo que todas as redes têm máscara /24
+        
+        # Acessa as informações da rede a partir dos edges
+        edge = next(edge for edge in graph.nodes[node].edges if edge.node2 == next_hop)
+        network = f"{edge.network}{edge.mask}"
         router_table.append((network, next_hop, cost))
-        # Executa o comando para adicionar a rota
+        
+        # Executa o comando para adicionar ou substituir a rota
         subprocess.run(['ip', 'route', 'replace', network, 'via', next_hop, 'metric', str(cost)], text=True)
+    return router_table
 
 class Edge:
     def __init__(self, node1, node2, network, mask, next_hop, cost) -> None:
@@ -236,7 +241,7 @@ def periodic_route_sender(NetworkGraphforRouter, router_name, interval=1):
             send_route_table(neighbors, NetworkGraphforRouter, router_name)
             time.sleep(interval)
         
-        ew_router_table(NetworkGraphforRouter, router_name)
+        new_router_table(NetworkGraphforRouter, router_name)
         
         time.sleep(alorithm_time)
 

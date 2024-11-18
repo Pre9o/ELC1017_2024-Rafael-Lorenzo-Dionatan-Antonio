@@ -51,7 +51,7 @@ def dijkstra(graph, start):
                 if min_node == start:
                     path[edge.node2] = (min_node, edge.network, edge.mask, edge.next_hop, edge.cost)
                 else:
-                    path[edge.node2] = (min_node, edge.network, edge.mask, path[min_node][3].next_hop, edge.cost)
+                    path[edge.node2] = (min_node, edge.network, edge.mask, path[min_node][3], edge.cost)
 
     # Construir os caminhos completos
     full_paths = {}

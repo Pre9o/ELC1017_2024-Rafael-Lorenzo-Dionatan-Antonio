@@ -48,7 +48,10 @@ def dijkstra(graph, start):
             weight = current_weight + edge.cost
             if edge.node2 not in visited or weight < visited[edge.node2][0]:
                 visited[edge.node2] = (weight, edge)  # Armazena o custo e a aresta
-                path[edge.node2] = (min_node, edge.network, edge.mask, edge.next_hop, edge.cost)
+                if min_node == start:
+                    path[edge.node2] = (min_node, edge.network, edge.mask, edge.node2, edge.cost)
+                else:
+                    path[edge.node2] = (min_node, edge.network, edge.mask, path[min_node][3], edge.cost)
 
     # Construir os caminhos completos
     full_paths = {}
@@ -80,7 +83,7 @@ def new_router_table(graph, router_name):
         
         # Executa o comando para adicionar ou substituir a rota
         print(f"Adicionando rota para {network}/{mask} via {next_hop} com custo {cost}")
-        subprocess.run(['ip', 'route', 'replace', f"{network}/{mask}", 'via', next_hop, 'metric', str(cost)], text=True)
+        subprocess.run(['ip', 'route', 'replace', f"{network}{mask}", 'via', next_hop, 'metric', str(cost)], text=True)
     return router_table
 
 class Edge:

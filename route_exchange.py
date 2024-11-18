@@ -71,6 +71,7 @@ def new_router_table(graph, router_name):
     for node, (cost, edge) in visited.items():
         if node == router_name:
             continue
+        
         path_info = path[node]
         next_hop = path_info[3]  # next_hop do primeiro movimento
         network = path_info[1]  # network do destino
@@ -83,6 +84,7 @@ def new_router_table(graph, router_name):
         
         # Executa o comando para adicionar ou substituir a rota
         print(f"Adicionando rota para {network}/{mask} via {next_hop} com custo {cost}")
+        
         subprocess.run(['ip', 'route', 'replace', f"{network}{mask}", 'via', next_hop, 'metric', str(cost)], text=True)
     return router_table
 

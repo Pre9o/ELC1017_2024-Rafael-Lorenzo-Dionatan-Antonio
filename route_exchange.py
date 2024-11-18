@@ -50,36 +50,40 @@ def dijkstra(graph, start):
                 visited[edge.node2] = (weight, edge)  # Armazena o custo e a aresta
                 path[edge.node2] = min_node
 
-    return visited, path
+    # Construir os caminhos completos
+    full_paths = {}
+    for node in visited:
+        full_path = []
+        current = node
+        while current is not None:
+            full_path.insert(0, current)
+            current = path.get(current)
+        full_paths[node] = full_path
+
+    return visited, full_paths
+
 
 def find_router_for_next_hop(graph, next_hop):
     for node_name, node in graph.nodes.items():
         for edge in node.edges:
             if edge.next_hop == next_hop:
-                return edge.node1
+                return edge.next_hop
     return None
 
 
 def new_router_table(graph, router_name):
-    visited, path = dijkstra(graph, router_name)
+    visited, full_paths = dijkstra(graph, router_name)
     router_table = []
     for node, (cost, edge) in visited.items():
         if node in ['r1', 'r2', 'r3', 'r4', 'r5']:
             continue
-        next_hop = node
-        while next_hop not in ['r1', 'r2', 'r3', 'r4', 'r5']:
-            next_hop = path[next_hop]
-
-        if next_hop != router_name:
-            while path[next_hop] != router_name:
-                next_hop = path[next_hop]
-                print(f"Procurando rota para {node} via {next_hop} 11111")
-
+        path = full_paths[node]
+        next_hop = path[1] if len(path) > 1 else node
 
         print(f"Calculando rota para {node} via {next_hop} com custo {cost}")
         
         # Utiliza as informações da aresta armazenada em visited
-        network = f"{edge.network}{edge.mask}"
+        network = f"{edge.network}/{edge.mask}"
         
         if next_hop == router_name:
             next_hop = edge.next_hop
@@ -87,30 +91,6 @@ def new_router_table(graph, router_name):
         else:
             next_hop = find_router_for_next_hop(graph, edge.next_hop)
 
-            # Agora tem que procurar a aresta que o node1 seja o router_name e o node2 seja o next_hop
-            
-            for node_name, node in graph.nodes.items():
-                for edge in node.edges:
-                    if edge.node1 == router_name and edge.node2 == next_hop:
-                        next_hop = edge.next_hop
-                        break
-            print(f"Procurando rota para {edge.next_hop} via {next_hop} 22222")
-                    
-            if next_hop in ['r1', 'r2', 'r3', 'r4', 'r5']:
-                desired_node = next_hop
-                for node_name, node in graph.nodes.items():
-                    for edge in node.edges:
-                        if edge.node1 in ['r1', 'r2', 'r3', 'r4', 'r5'] and edge.node2 == desired_node:
-                            for edge1 in graph.nodes[edge.node1].edges:
-                                if edge1.node1 == router_name and edge1.node2 == edge.node1:
-                                    next_hop = edge1.next_hop
-                                    cost = edge1.cost + edge.cost
-                                    break
-                        
-            
-            print(f"Procurando rota para {edge.next_hop} via {next_hop} 33333")
-                    
-    
         router_table.append((network, next_hop, cost))
         
         # Executa o comando para adicionar ou substituir a rota

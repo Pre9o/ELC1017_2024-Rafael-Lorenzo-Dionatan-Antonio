@@ -34,7 +34,6 @@ class AdvancedTopo(Topo):
         self.addLink(r2, r3, intfName1='r2-eth3', params1={'ip': '10.15.15.1/24'}, intfName2='r3-eth3', params2={'ip': '10.15.15.2/24'})
         self.addLink(r1, h9, intfName1='r1-eth4', params1={'ip': '10.9.9.254/24'}, intfName2='h9-eth0', params2={'ip': '10.9.9.1/24'})
         self.addLink(h1, r1, intfName1='h1-eth0', params1={'ip': '10.1.1.1/24'}, intfName2='r1-eth5', params2={'ip': '10.1.1.254/24'})
-        self.addLink(r1, h3, intfName1='r1-eth6', params1={'ip': '10.3.3.254/24'}, intfName2='h3-eth0', params2={'ip': '10.3.3.1/24'})
         self.addLink(h3, r3, intfName1='h3-eth1', params1={'ip': '10.3.3.1/24'}, intfName2='r3-eth4', params2={'ip': '10.3.3.254/24'})
         self.addLink(r3, h4, intfName1='r3-eth5', params1={'ip': '10.4.4.254/24'}, intfName2='h4-eth0', params2={'ip': '10.4.4.1/24'})
         self.addLink(r2, h4, intfName1='r2-eth4', params1={'ip': '10.4.4.254/24'}, intfName2='h4-eth1', params2={'ip': '10.4.4.1/24'})

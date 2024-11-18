@@ -73,8 +73,8 @@ def run():
     net['r2'].cmd('ip route add 10.4.4.0/24 via 10.4.4.1 metric 1')      # r2 -> h4
     net['r2'].cmd('ip route add 10.5.5.0/24 via 10.5.5.1 metric 1')      # r2 -> h5
 
-    net['r3'].cmd('ip route add 10.12.12.0/24 via 10.12.12.1 metric 5')  # r3 -> r1
-    net['r3'].cmd('ip route add 10.15.15.0/24 via 10.15.15.1 metric 6')  # r3 -> r2
+    net['r3'].cmd('ip route add 10.12.12.0/24 via 10.12.12.2 metric 5')  # r3 -> r1
+    net['r3'].cmd('ip route add 10.15.15.0/24 via 10.15.15.2 metric 6')  # r3 -> r2
     net['r3'].cmd('ip route add 10.3.3.0/24 via 10.3.3.1 metric 1')      # r3 -> h3
     net['r3'].cmd('ip route add 10.4.4.0/24 via 10.4.4.1 metric 1')      # r3 -> h4
     net['r3'].cmd('ip route add 10.7.7.0/24 via 10.7.7.1 metric 1')      # r3 -> h7

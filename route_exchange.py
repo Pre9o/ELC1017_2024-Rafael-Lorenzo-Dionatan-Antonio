@@ -69,7 +69,7 @@ def new_router_table(graph, router_name):
     visited, full_paths, path = dijkstra(graph, router_name)
     router_table = []
     for node, (cost, edge) in visited.items():
-        if node in ['r1', 'r2', 'r3', 'r4', 'r5']:
+        if node == router_name:
             continue
         path_info = path[node]
         next_hop = path_info[3]  # next_hop do primeiro movimento

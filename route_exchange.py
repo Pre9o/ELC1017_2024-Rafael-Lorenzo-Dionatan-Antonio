@@ -49,9 +49,9 @@ def dijkstra(graph, start):
             if edge.node2 not in visited or weight < visited[edge.node2][0]:
                 visited[edge.node2] = (weight, edge)  # Armazena o custo e a aresta
                 if min_node == start:
-                    path[edge.node2] = (min_node, edge.network, edge.mask, edge.node2, edge.cost)
+                    path[edge.node2] = (min_node, edge.network, edge.mask, edge.next_hop, edge.cost)
                 else:
-                    path[edge.node2] = (min_node, edge.network, edge.mask, path[min_node][3], edge.cost)
+                    path[edge.node2] = (min_node, edge.network, edge.mask, path[min_node][3].next_hop, edge.cost)
 
     # Construir os caminhos completos
     full_paths = {}

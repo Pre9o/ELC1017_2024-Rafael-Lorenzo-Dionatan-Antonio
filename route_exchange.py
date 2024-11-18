@@ -92,7 +92,12 @@ def new_router_table(graph, router_name):
             print(f"Procurando rota para {edge.next_hop} via {next_hop} 22222")
                     
             if next_hop in ['r1', 'r2', 'r3', 'r4', 'r5']:
-                next_hop = edge.next_hop
+                for node_name, node in graph.nodes.items():
+                    for edge in node.edges:
+                        if edge.node1 == next_hop and edge.node2 == router_name:
+                            next_hop = edge.next_hop
+                            cost = edge.cost
+                            break
             
             print(f"Procurando rota para {edge.next_hop} via {next_hop} 33333")
                     

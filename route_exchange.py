@@ -69,6 +69,8 @@ def new_router_table(graph, router_name):
         next_hop = node
         while next_hop not in ['r1', 'r2', 'r3', 'r4', 'r5']:
             next_hop = path[next_hop]
+
+        print(f"Calculando rota para {node} via {next_hop} com custo {cost}")
         
         # Utiliza as informações da aresta armazenada em visited
         network = f"{edge.network}{edge.mask}"
@@ -78,6 +80,8 @@ def new_router_table(graph, router_name):
             cost = edge.cost
         else:
             next_hop = find_router_for_next_hop(graph, edge.next_hop)
+
+            print(f"Procurando rota para {edge.next_hop} via {next_hop}")
         
             # Agora tem que procurar a aresta que o node1 seja o router_name e o node2 seja o next_hop
             
@@ -86,9 +90,12 @@ def new_router_table(graph, router_name):
                     if edge.node1 == router_name and edge.node2 == next_hop:
                         next_hop = edge.next_hop
                         break
+            print(f"Procurando rota para {edge.next_hop} via {next_hop} 22222")
                     
             if next_hop in ['r1', 'r2', 'r3', 'r4', 'r5']:
                 next_hop = edge.next_hop
+            
+            print(f"Procurando rota para {edge.next_hop} via {next_hop} 33333")
                     
     
         router_table.append((network, next_hop, cost))

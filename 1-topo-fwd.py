@@ -36,7 +36,7 @@ class AdvancedTopo(Topo):
         self.addLink(h1, r1, intfName1='h1-eth0', params1={'ip': '10.1.1.1/24'}, intfName2='r1-eth5', params2={'ip': '10.1.1.254/24'})
         self.addLink(h3, r3, intfName1='h3-eth1', params1={'ip': '10.3.3.1/24'}, intfName2='r3-eth4', params2={'ip': '10.3.3.254/24'})
         self.addLink(r3, h4, intfName1='r3-eth5', params1={'ip': '10.4.4.254/24'}, intfName2='h4-eth0', params2={'ip': '10.4.4.1/24'})
-        self.addLink(r2, h4, intfName1='r2-eth4', params1={'ip': '10.4.4.254/24'}, intfName2='h4-eth1', params2={'ip': '10.4.4.1/24'})
+        self.addLink(r2, h4, intfName1='r2-eth4', params1={'ip': '10.14.14.254/24'}, intfName2='h4-eth1', params2={'ip': '10.14.14.1/24'})  # Corrigido
         self.addLink(h4, r4, intfName1='h4-eth2', params1={'ip': '10.4.4.1/24'}, intfName2='r4-eth3', params2={'ip': '10.4.4.254/24'})
         self.addLink(h5, r2, intfName1='h5-eth0', params1={'ip': '10.5.5.1/24'}, intfName2='r2-eth5', params2={'ip': '10.5.5.254/24'})
         self.addLink(h6, r4, intfName1='h6-eth0', params1={'ip': '10.6.6.1/24'}, intfName2='r4-eth5', params2={'ip': '10.6.6.254/24'})
@@ -44,11 +44,12 @@ class AdvancedTopo(Topo):
         self.addLink(r5, h2, intfName1='r5-eth2', params1={'ip': '10.2.2.254/24'}, intfName2='h2-eth0', params2={'ip': '10.2.2.1/24'})
         self.addLink(r5, h8, intfName1='r5-eth3', params1={'ip': '10.8.8.254/24'}, intfName2='h8-eth0', params2={'ip': '10.8.8.1/24'})
 
+          
+
 def run():
     "Topologia avançada com cinco roteadores e nove hosts"
     net = Mininet(topo=AdvancedTopo(), controller=None)
     
-    # Disable offload features for proper packet handling in Scapy
     for _, v in net.nameToNode.items():
         for itf in v.intfList():
             v.cmd('ethtool -K ' + itf.name + ' tx off rx off')

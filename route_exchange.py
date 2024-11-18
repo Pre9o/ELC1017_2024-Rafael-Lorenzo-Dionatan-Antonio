@@ -81,13 +81,12 @@ def new_router_table(graph, router_name):
         else:
             next_hop = find_router_for_next_hop(graph, edge.next_hop)
 
-            print(f"Procurando rota para {edge.next_hop} via {next_hop}")
-        
             # Agora tem que procurar a aresta que o node1 seja o router_name e o node2 seja o next_hop
             
             for node_name, node in graph.nodes.items():
                 for edge in node.edges:
                     if edge.node1 == router_name and edge.node2 == next_hop:
+                        print(f"Router name: {router_name}, Next hop: {next_hop}")
                         next_hop = edge.next_hop
                         break
             print(f"Procurando rota para {edge.next_hop} via {next_hop} 22222")

@@ -65,7 +65,7 @@ def run():
     net['r1'].cmd('ip route add 10.9.9.0/24 via 10.9.9.1 metric 1')      # r1 -> h9
 
     net['r2'].cmd('ip route add 10.11.11.0/24 via 10.11.11.1 metric 9')  # r2 -> r1
-    net['r2'].cmd('ip route add 10.13.13.0/24 via 10.13.13.1 metric 8')  # r2 -> r4
+    net['r2'].cmd('ip route add 10.13.13.0/24 via 10.13.13.2 metric 8')  # r2 -> r4
     net['r2'].cmd('ip route add 10.15.15.0/24 via 10.15.15.1 metric 4')  # r2 -> r3
     net['r2'].cmd('ip route add 10.5.5.0/24 via 10.5.5.1 metric 1')      # r2 -> h5
 
@@ -75,7 +75,7 @@ def run():
     net['r3'].cmd('ip route add 10.4.4.0/24 via 10.4.4.1 metric 1')      # r3 -> h4
     net['r3'].cmd('ip route add 10.7.7.0/24 via 10.7.7.1 metric 1')      # r3 -> h7
 
-    net['r4'].cmd('ip route add 10.13.13.0/24 via 10.13.13.1 metric 5')  # r4 -> r2
+    net['r4'].cmd('ip route add 10.13.13.0/24 via 10.13.13.1 metric 3')  # r4 -> r2
     net['r4'].cmd('ip route add 10.6.6.0/24 via 10.6.6.1 metric 1')      # r4 -> h6
 
     net['r5'].cmd('ip route add 10.10.10.0/24 via 10.10.10.1 metric 7')  # r5 -> r1
@@ -85,6 +85,6 @@ def run():
     CLI(net)
     net.stop()
 
-if __name__ == '__main__':
+if __name__ == '_main_':
     setLogLevel('info')
     run()

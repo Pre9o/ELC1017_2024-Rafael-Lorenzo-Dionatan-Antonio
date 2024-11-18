@@ -48,7 +48,7 @@ def dijkstra(graph, start):
             weight = current_weight + edge.cost
             if edge.node2 not in visited or weight < visited[edge.node2][0]:
                 visited[edge.node2] = (weight, edge)  # Armazena o custo e a aresta
-                path[edge.node2] = min_node
+                path[edge.node2] = (min_node, edge.network, edge.mask, edge.next_hop, edge.cost)
 
     # Construir os caminhos completos
     full_paths = {}
@@ -57,45 +57,30 @@ def dijkstra(graph, start):
         current = node
         while current is not None:
             full_path.insert(0, current)
-            current = path.get(current)
+            current = path.get(current, (None,))[0]
         full_paths[node] = full_path
 
-    return visited, full_paths
-
-
-def find_router_for_next_hop(graph, next_hop):
-    for node_name, node in graph.nodes.items():
-        for edge in node.edges:
-            if edge.next_hop == next_hop:
-                return edge.next_hop
-    return None
-
+    return visited, full_paths, path
 
 def new_router_table(graph, router_name):
-    visited, full_paths = dijkstra(graph, router_name)
+    visited, full_paths, path = dijkstra(graph, router_name)
     router_table = []
     for node, (cost, edge) in visited.items():
         if node in ['r1', 'r2', 'r3', 'r4', 'r5']:
             continue
-        path = full_paths[node]
-        next_hop = path[1] if len(path) > 1 else node
+        path_info = path[node]
+        next_hop = path_info[3]  # next_hop do primeiro movimento
+        network = path_info[1]  # network do destino
+        mask = path_info[2]  # mask do destino
+        cost = path_info[4]  # cost do destino
 
         print(f"Calculando rota para {node} via {next_hop} com custo {cost}")
         
-        # Utiliza as informações da aresta armazenada em visited
-        network = f"{edge.network}/{edge.mask}"
-        
-        if next_hop == router_name:
-            next_hop = edge.next_hop
-            cost = edge.cost
-        else:
-            next_hop = find_router_for_next_hop(graph, edge.next_hop)
-
-        router_table.append((network, next_hop, cost))
+        router_table.append((network, mask, next_hop, cost))
         
         # Executa o comando para adicionar ou substituir a rota
-        print(f"Adicionando rota para {network} via {next_hop} com custo {cost}")
-        subprocess.run(['ip', 'route', 'replace', network, 'via', next_hop, 'metric', str(cost)], text=True)
+        print(f"Adicionando rota para {network}/{mask} via {next_hop} com custo {cost}")
+        subprocess.run(['ip', 'route', 'replace', f"{network}/{mask}", 'via', next_hop, 'metric', str(cost)], text=True)
     return router_table
 
 class Edge:

@@ -51,4 +51,4 @@ def example(pkt):
 
 
 interfaces = get_interfaces()
-sniff(iface=interfaces, filter=f"ip proto {ROUTE_PROTO_ID}", prn=example)
+sniff(iface=interfaces, filter=f"ip proto {ROUTE_PROTO_ID} or ip", prn=example)

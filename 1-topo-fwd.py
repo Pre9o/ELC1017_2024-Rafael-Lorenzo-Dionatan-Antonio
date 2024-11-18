@@ -87,6 +87,10 @@ def run():
     net['r5'].cmd('ip route add 10.2.2.0/24 via 10.2.2.1 metric 1')      # r5 -> h2
     net['r5'].cmd('ip route add 10.8.8.0/24 via 10.8.8.1 metric 1')      # r5 -> h8
     
+    # Executar o script router_exchange.py em cada roteador
+    for router in ['r1', 'r2', 'r3', 'r4', 'r5']:
+        net[router].cmd(f'python3 router_exchange.py {router} &')
+    
     CLI(net)
     net.stop()
 

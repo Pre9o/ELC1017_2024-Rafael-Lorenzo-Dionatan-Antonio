@@ -86,7 +86,6 @@ def new_router_table(graph, router_name):
             for node_name, node in graph.nodes.items():
                 for edge in node.edges:
                     if edge.node1 == router_name and edge.node2 == next_hop:
-                        print(f"Router name: {router_name}, Next hop: {next_hop}")
                         next_hop = edge.next_hop
                         break
             print(f"Procurando rota para {edge.next_hop} via {next_hop} 22222")
@@ -94,6 +93,7 @@ def new_router_table(graph, router_name):
             if next_hop in ['r1', 'r2', 'r3', 'r4', 'r5']:
                 for node_name, node in graph.nodes.items():
                     for edge in node.edges:
+                        print(f"Router name: {router_name}, Next hop: {next_hop}")
                         if edge.node1 == next_hop and edge.node2 == router_name:
                             next_hop = edge.next_hop
                             cost = edge.cost

@@ -71,7 +71,9 @@ def new_router_table(graph, router_name):
             next_hop = path[next_hop]
 
         if next_hop != router_name:
-            continue
+            while path[next_hop] != router_name:
+                next_hop = path[next_hop]
+                print(f"Procurando rota para {node} via {next_hop} 11111")
 
 
         print(f"Calculando rota para {node} via {next_hop} com custo {cost}")

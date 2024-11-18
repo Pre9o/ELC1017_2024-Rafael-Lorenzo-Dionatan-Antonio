@@ -70,6 +70,10 @@ def new_router_table(graph, router_name):
         while next_hop not in ['r1', 'r2', 'r3', 'r4', 'r5']:
             next_hop = path[next_hop]
 
+        if next_hop != router_name:
+            continue
+
+
         print(f"Calculando rota para {node} via {next_hop} com custo {cost}")
         
         # Utiliza as informações da aresta armazenada em visited

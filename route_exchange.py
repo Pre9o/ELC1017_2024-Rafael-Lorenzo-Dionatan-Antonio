@@ -84,11 +84,7 @@ def new_router_table(graph, router_name):
         # Executa o comando para adicionar ou substituir a rota
         print(f"Adicionando rota para {network}/{mask} via {next_hop} com custo {cost}")
         
-        ip_route_output = subprocess.check_output(['ip', 'route'], text=True)
-        if f"{network}{mask}" in ip_route_output:
-            continue
-        else:
-            subprocess.run(['ip', 'route', 'replace', f"{network}{mask}", 'via', next_hop, 'metric', str(cost)], text=True)
+        subprocess.run(['ip', 'route', 'replace', f"{network}{mask}", 'via', next_hop, 'metric', str(cost)], text=True)
     return router_table
 
 class Edge:

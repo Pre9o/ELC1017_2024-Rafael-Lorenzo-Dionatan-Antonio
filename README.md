@@ -1,7 +1,5 @@
 # Link State Algorithm using Mininet
 
-![Mininet](https://mininet.org/images/mininet-logo.png)
-
 ## Descrição dos Arquivos
 
 - **1-topo-fwd.py**: Executa a topografia em malha.

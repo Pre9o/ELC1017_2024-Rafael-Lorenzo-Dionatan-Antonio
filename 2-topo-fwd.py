@@ -57,27 +57,27 @@ def run():
         net[router].cmd('sysctl -w net.ipv4.ip_forward=1')
     
     # Adicionar rotas dos vizinhos em cada roteador
-    net['r1'].cmd('ip route add 10.10.10.0/24 via 10.10.10.2')  # r1 -> r2
-    net['r1'].cmd('ip route add 10.11.11.0/24 via 10.11.11.2')  # r1 -> r3
-    net['r1'].cmd('ip route add 10.12.12.0/24 via 10.12.12.2')  # r1 -> r4
-    net['r1'].cmd('ip route add 10.13.13.0/24 via 10.13.13.2')  # r1 -> r5
+    net['r1'].cmd('ip route add 10.10.10.0/24 via 10.10.10.2 metric 2')  # r1 -> r2
+    net['r1'].cmd('ip route add 10.11.11.0/24 via 10.11.11.2 metric 3')  # r1 -> r3
+    net['r1'].cmd('ip route add 10.12.12.0/24 via 10.12.12.2 metric 2')  # r1 -> r4
+    net['r1'].cmd('ip route add 10.13.13.0/24 via 10.13.13.2 metric 1')  # r1 -> r5
 
-    net['r2'].cmd('ip route add 10.10.10.0/24 via 10.10.10.1')  # r2 -> r1
-    net['r2'].cmd('ip route add 10.1.1.0/24 via 10.1.1.1')      # r2 -> h1
-    net['r2'].cmd('ip route add 10.2.2.0/24 via 10.2.2.1')      # r2 -> h2
+    net['r2'].cmd('ip route add 10.10.10.0/24 via 10.10.10.1 metric 3')  # r2 -> r1
+    net['r2'].cmd('ip route add 10.1.1.0/24 via 10.1.1.1 metric 1')      # r2 -> h1
+    net['r2'].cmd('ip route add 10.2.2.0/24 via 10.2.2.1 metric 1')      # r2 -> h2
 
-    net['r3'].cmd('ip route add 10.11.11.0/24 via 10.11.11.1')  # r3 -> r1
-    net['r3'].cmd('ip route add 10.3.3.0/24 via 10.3.3.1')      # r3 -> h3
-    net['r3'].cmd('ip route add 10.4.4.0/24 via 10.4.4.1')      # r3 -> h4
+    net['r3'].cmd('ip route add 10.11.11.0/24 via 10.11.11.1 metric 4')  # r3 -> r1
+    net['r3'].cmd('ip route add 10.3.3.0/24 via 10.3.3.1 metric 1')      # r3 -> h3
+    net['r3'].cmd('ip route add 10.4.4.0/24 via 10.4.4.1 metric 1')      # r3 -> h4
 
-    net['r4'].cmd('ip route add 10.12.12.0/24 via 10.12.12.1')  # r4 -> r1
-    net['r4'].cmd('ip route add 10.5.5.0/24 via 10.5.5.1')      # r4 -> h5
-    net['r4'].cmd('ip route add 10.6.6.0/24 via 10.6.6.1')      # r4 -> h6
+    net['r4'].cmd('ip route add 10.12.12.0/24 via 10.12.12.1 metric 2')  # r4 -> r1
+    net['r4'].cmd('ip route add 10.5.5.0/24 via 10.5.5.1 metric 1')      # r4 -> h5
+    net['r4'].cmd('ip route add 10.6.6.0/24 via 10.6.6.1 metric 1')      # r4 -> h6
 
-    net['r5'].cmd('ip route add 10.13.13.0/24 via 10.13.13.1')  # r5 -> r1
-    net['r5'].cmd('ip route add 10.7.7.0/24 via 10.7.7.1')      # r5 -> h7
-    net['r5'].cmd('ip route add 10.8.8.0/24 via 10.8.8.1')      # r5 -> h8
-    net['r5'].cmd('ip route add 10.9.9.0/24 via 10.9.9.1')      # r5 -> h9
+    net['r5'].cmd('ip route add 10.13.13.0/24 via 10.13.13.1 metric 5')  # r5 -> r1
+    net['r5'].cmd('ip route add 10.7.7.0/24 via 10.7.7.1 metric 1')      # r5 -> h7
+    net['r5'].cmd('ip route add 10.8.8.0/24 via 10.8.8.1 metric 1')      # r5 -> h8
+    net['r5'].cmd('ip route add 10.9.9.0/24 via 10.9.9.1 metric 1')      # r5 -> h9
     
     CLI(net)
     net.stop()

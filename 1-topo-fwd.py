@@ -83,6 +83,7 @@ def run():
     net['r5'].cmd('ip route add 10.8.8.0/24 via 10.8.8.1 metric 1')      # r5 -> h8
     
     CLI(net)
+    
     net.stop()
 
 if __name__ == '_main_':
